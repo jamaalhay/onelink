@@ -41,4 +41,4 @@ WORKDIR /repo/apps/backend/.medusa/server
 
 EXPOSE 9000
 
-CMD ["sh", "-c", "pnpm exec medusa start"]
+CMD ["sh", "-c", "/repo/node_modules/.bin/medusa start"]
