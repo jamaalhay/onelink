@@ -175,7 +175,8 @@ export default async function seedOnelink({ container }: ExecArgs) {
     const linked = new Set(
       rawLinked.flatMap((p) => (p?.id ? [p.id] : []))
     );
-    const desired = ["pp_system_default", "pp_cod_cod"];
+    const stripeId = process.env.STRIPE_API_KEY ? ["pp_stripe_stripe"] : [];
+    const desired = ["pp_system_default", "pp_cod_cod", ...stripeId];
     const missing = desired.filter((p) => !linked.has(p));
     if (missing.length > 0) {
       logger.info(`[onelink] linking missing payment providers to region: ${missing.join(", ")}`);

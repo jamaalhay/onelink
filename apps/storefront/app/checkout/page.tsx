@@ -36,6 +36,8 @@ export default async function CheckoutPage() {
           shippingOptions={optionMap}
           initialEmail={cart.email}
           initialShippingOptionId={cart.shipping_methods?.[0]?.shipping_option_id ?? null}
+          cartTotal={cart.total ?? cart.subtotal ?? 0}
+          cartCurrency={cart.currency_code ?? "jmd"}
         />
 
         <div className="space-y-4 lg:sticky lg:top-28 lg:self-start">

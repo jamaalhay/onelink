@@ -3,6 +3,14 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import {
+  Elements,
+  PaymentElement,
+  useElements,
+  useStripe,
+} from "@stripe/react-stripe-js";
+import type { StripeElementsOptions } from "@stripe/stripe-js";
+import { getStripe, STRIPE_ENABLED } from "@/lib/stripe";
 
 export interface CheckoutShippingOption {
   id: string;
@@ -15,29 +23,61 @@ interface CheckoutFormProps {
   shippingOptions: CheckoutShippingOption[];
   initialEmail?: string | null;
   initialShippingOptionId?: string | null;
+  cartTotal: number;
+  cartCurrency: string;
 }
 
-export function CheckoutForm({ shippingOptions, initialEmail, initialShippingOptionId }: CheckoutFormProps) {
+// Wraps the inner form in <Elements> when Stripe is enabled so the
+// useStripe/useElements hooks work everywhere they're called. When Stripe is
+// disabled the inner form runs alone — card payments fall back to the no-op
+// system_default provider in /api/checkout, which doesn't need card details.
+export function CheckoutForm(props: CheckoutFormProps) {
+  if (!STRIPE_ENABLED) {
+    return <CheckoutFormInner {...props} />;
+  }
+
+  // Stripe requires amount in the smallest currency unit. JMD has no
+  // sub-units (Medusa already stores totals in cents-equivalent for currencies
+  // that have them; for JMD it's just whole units). Math.max ensures we don't
+  // pass amount=0 if the cart total isn't loaded yet.
+  const options: StripeElementsOptions = {
+    mode: "payment",
+    amount: Math.max(props.cartTotal || 0, 100),
+    currency: (props.cartCurrency || "jmd").toLowerCase(),
+    appearance: { theme: "stripe" },
+  };
+
+  return (
+    <Elements stripe={getStripe()} options={options}>
+      <CheckoutFormInner {...props} />
+    </Elements>
+  );
+}
+
+function CheckoutFormInner({
+  shippingOptions,
+  initialEmail,
+  initialShippingOptionId,
+}: CheckoutFormProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  // Customer info
+  const stripe = useStripe();
+  const elements = useElements();
+
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState(initialEmail ?? "");
 
-  // Address
   const [street, setStreet] = useState("");
   const [landmark, setLandmark] = useState("");
   const [instructions, setInstructions] = useState("");
 
-  // Shipping (zone) selection
   const [shippingOptionId, setShippingOptionId] = useState<string>(
     initialShippingOptionId ?? shippingOptions[0]?.id ?? ""
   );
 
-  // Payment
   const [paymentMethod, setPaymentMethod] = useState<"card" | "cod">("card");
 
   const handlePlace = () => {
@@ -51,14 +91,92 @@ export function CheckoutForm({ shippingOptions, initialEmail, initialShippingOpt
       return;
     }
 
+    const customer = {
+      name: name.trim(),
+      phone: phone.trim(),
+      email: email.trim() || undefined,
+    };
+    const address = {
+      street: street.trim(),
+      landmark: landmark.trim() || undefined,
+    };
+
     startTransition(async () => {
       try {
+        if (paymentMethod === "card" && STRIPE_ENABLED) {
+          if (!stripe || !elements) {
+            setError("Payment form is still loading — try again in a moment.");
+            return;
+          }
+
+          // Submit Elements to validate before we ask the backend to mint a
+          // PaymentIntent. Stripe requires this call before confirmPayment.
+          const submitRes = await elements.submit();
+          if (submitRes.error) {
+            setError(submitRes.error.message ?? "Card details invalid");
+            return;
+          }
+
+          // Server: write address+shipping, init Stripe session, return
+          // client_secret.
+          const initRes = await fetch("/api/payment/init", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              customer,
+              address,
+              shipping_option_id: shippingOptionId,
+            }),
+          });
+          const initData = await initRes.json().catch(() => ({}));
+          if (!initRes.ok || !initData.clientSecret) {
+            setError(initData.error ?? `Payment init failed (${initRes.status})`);
+            return;
+          }
+
+          // Confirm the PaymentIntent with the card details Elements has.
+          const confirm = await stripe.confirmPayment({
+            elements,
+            clientSecret: initData.clientSecret,
+            confirmParams: {
+              return_url: `${window.location.origin}/checkout/processing`,
+            },
+            redirect: "if_required",
+          });
+          if (confirm.error) {
+            setError(confirm.error.message ?? "Card declined");
+            return;
+          }
+
+          // Card succeeded → complete the cart on Medusa side.
+          const completeRes = await fetch("/api/checkout", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              customer,
+              address,
+              shipping_option_id: shippingOptionId,
+              payment_method: "card",
+            }),
+          });
+          const completeData = await completeRes.json().catch(() => ({}));
+          if (completeRes.ok && completeData.ok && completeData.orderId) {
+            router.push(`/order/${completeData.orderId}/success`);
+          } else {
+            setError(
+              completeData.error ?? `Could not complete order (${completeRes.status})`
+            );
+          }
+          return;
+        }
+
+        // COD path (or Stripe disabled): one-shot.
         const res = await fetch("/api/checkout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            customer: { name: name.trim(), phone: phone.trim(), email: email.trim() || undefined },
-            address: { street: street.trim(), landmark: landmark.trim() || undefined },
+            customer,
+            address,
             shipping_option_id: shippingOptionId,
             payment_method: paymentMethod,
           }),
@@ -128,7 +246,7 @@ export function CheckoutForm({ shippingOptions, initialEmail, initialShippingOpt
         <PaymentRadio
           id="card"
           label="Card payment"
-          detail="Visa, Mastercard, AmEx (test mode)"
+          detail={STRIPE_ENABLED ? "Visa, Mastercard, AmEx" : "Card (no real charge in this env)"}
           checked={paymentMethod === "card"}
           onChange={() => setPaymentMethod("card")}
         />
@@ -139,6 +257,12 @@ export function CheckoutForm({ shippingOptions, initialEmail, initialShippingOpt
           checked={paymentMethod === "cod"}
           onChange={() => setPaymentMethod("cod")}
         />
+
+        {paymentMethod === "card" && STRIPE_ENABLED && (
+          <div className="mt-2 p-4 rounded-[var(--radius-button)] border border-[var(--color-border)] bg-white">
+            <PaymentElement options={{ layout: "tabs" }} />
+          </div>
+        )}
       </FormBlock>
 
       {error && (

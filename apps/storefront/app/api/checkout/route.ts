@@ -16,84 +16,80 @@ async function getCartId(): Promise<string | undefined> {
   return c.get(CART_COOKIE)?.value;
 }
 
+// Two flows land here:
+//   COD → write address+shipping, init pp_cod_cod session, complete in one shot.
+//   Card → /api/payment/init has already done address+shipping+Stripe session
+//          and the client has confirmed the PaymentIntent via stripe.js, so
+//          we just complete the cart.
 export async function POST(req: Request) {
   try {
     const cartId = await getCartId();
-    if (!cartId) {
-      return NextResponse.json({ error: "No cart" }, { status: 400 });
-    }
-    const body = (await req.json()) as PlacePayload;
-    if (!body.customer.name || !body.customer.phone || !body.address.street) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
-    if (!body.shipping_option_id) {
-      return NextResponse.json({ error: "Missing shipping zone" }, { status: 400 });
-    }
+    if (!cartId) return NextResponse.json({ error: "No cart" }, { status: 400 });
 
-    // Validate payment_method up front — bad client input shouldn't reach Medusa.
-    const ALLOWED_PAYMENT_METHODS = new Set(["card", "cod"]);
+    const body = (await req.json()) as PlacePayload;
+
+    const ALLOWED = new Set(["card", "cod"]);
     const method = body.payment_method ?? "card";
-    if (!ALLOWED_PAYMENT_METHODS.has(method)) {
+    if (!ALLOWED.has(method)) {
       return NextResponse.json({ error: `Unknown payment_method "${method}"` }, { status: 400 });
     }
-    // Card payments use Stripe when configured; otherwise fall back to the
-    // system_default provider (no real charge — useful for staging).
-    const cardProvider = process.env.NEXT_PUBLIC_STRIPE_ENABLED === "true"
-      ? "pp_stripe_stripe"
-      : "pp_system_default";
-    const providerId = method === "cod" ? "pp_cod_cod" : cardProvider;
 
-    const [first, ...rest] = body.customer.name.trim().split(/\s+/);
-    const email =
-      body.customer.email?.trim() ||
-      `${body.customer.phone.replace(/\D/g, "")}@onelink.local`;
+    if (method === "cod") {
+      if (!body.customer?.name || !body.customer?.phone || !body.address?.street) {
+        return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      }
+      if (!body.shipping_option_id) {
+        return NextResponse.json({ error: "Missing shipping zone" }, { status: 400 });
+      }
 
-    // Update cart with customer + address
-    await sdk.store.cart.update(cartId, {
-      email,
-      shipping_address: {
-        first_name: first,
-        last_name: rest.join(" "),
-        phone: body.customer.phone,
-        address_1: body.address.street + (body.address.landmark ? ` (${body.address.landmark})` : ""),
-        address_2: "",
-        city: "Kingston",
-        country_code: "jm",
-        province: "Kingston",
-        postal_code: "00000",
-      },
-      billing_address: {
-        first_name: first,
-        last_name: rest.join(" "),
-        phone: body.customer.phone,
-        address_1: body.address.street + (body.address.landmark ? ` (${body.address.landmark})` : ""),
-        address_2: "",
-        city: "Kingston",
-        country_code: "jm",
-        province: "Kingston",
-        postal_code: "00000",
-      },
-    });
+      const [first, ...rest] = body.customer.name.trim().split(/\s+/);
+      const email =
+        body.customer.email?.trim() ||
+        `${body.customer.phone.replace(/\D/g, "")}@onelink.local`;
 
-    // Pick the shipping option
-    await sdk.store.cart.addShippingMethod(cartId, { option_id: body.shipping_option_id });
+      await sdk.store.cart.update(cartId, {
+        email,
+        shipping_address: {
+          first_name: first,
+          last_name: rest.join(" "),
+          phone: body.customer.phone,
+          address_1: body.address.street + (body.address.landmark ? ` (${body.address.landmark})` : ""),
+          address_2: "",
+          city: "Kingston",
+          country_code: "jm",
+          province: "Kingston",
+          postal_code: "00000",
+        },
+        billing_address: {
+          first_name: first,
+          last_name: rest.join(" "),
+          phone: body.customer.phone,
+          address_1: body.address.street + (body.address.landmark ? ` (${body.address.landmark})` : ""),
+          address_2: "",
+          city: "Kingston",
+          country_code: "jm",
+          province: "Kingston",
+          postal_code: "00000",
+        },
+      });
 
-    const cartFresh = await sdk.store.cart.retrieve(cartId, {
-      fields: "id,*payment_collection,payment_collection.payment_sessions.*",
-    });
-    if (!cartFresh.cart.payment_collection?.payment_sessions?.length) {
-      try {
-        await sdk.store.payment.initiatePaymentSession(cartFresh.cart, { provider_id: providerId });
-      } catch (err) {
-        console.error("[api/checkout] initPayment err:", err);
+      await sdk.store.cart.addShippingMethod(cartId, { option_id: body.shipping_option_id });
+
+      const cartFresh = await sdk.store.cart.retrieve(cartId, {
+        fields: "id,*payment_collection,payment_collection.payment_sessions.*",
+      });
+      if (!cartFresh.cart.payment_collection?.payment_sessions?.length) {
+        await sdk.store.payment.initiatePaymentSession(cartFresh.cart, { provider_id: "pp_cod_cod" });
       }
     }
 
-    // Complete the order
+    // For card, the client-side stripe.confirmPayment has already authorized
+    // the session. Medusa's webhook will move the payment to authorized state
+    // when Stripe fires payment_intent.succeeded — but cart.complete() also
+    // re-checks the session status against Stripe, so completing here works.
     const result = await sdk.store.cart.complete(cartId);
     if (result.type === "order") {
       const res = NextResponse.json({ ok: true, orderId: result.order.id });
-      // Clear cart cookie now that order is placed
       res.cookies.set({
         name: CART_COOKIE,
         value: "",
@@ -105,7 +101,10 @@ export async function POST(req: Request) {
       });
       return res;
     }
-    return NextResponse.json({ ok: false, error: result.error?.message ?? "Checkout failed" }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: result.error?.message ?? "Checkout failed" },
+      { status: 400 }
+    );
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error("[api/checkout] error:", msg);

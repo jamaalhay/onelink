@@ -64,7 +64,7 @@ async function step(name, fn) {
 
 try {
   await step("home-loads", async () => {
-    await page.goto(`${BASE}/`, { waitUntil: "networkidle", timeout: 60000 });
+    await page.goto(`${BASE}/`, { waitUntil: "domcontentloaded", timeout: 60000 });
     const h1 = await page.locator("h1").first().textContent();
     if (!h1?.toLowerCase().includes("one link")) throw new Error(`expected hero h1, got: ${h1}`);
   });
@@ -80,23 +80,23 @@ try {
   });
 
   await step("shop-loads", async () => {
-    await page.goto(`${BASE}/shop`, { waitUntil: "networkidle", timeout: 60000 });
+    await page.goto(`${BASE}/shop`, { waitUntil: "domcontentloaded", timeout: 60000 });
     const cards = await page.locator("a[href^='/products/']").count();
     if (cards < 5) throw new Error(`expected >=5 product cards on shop, got ${cards}`);
   });
 
   await step("category-page-vapes", async () => {
-    await page.goto(`${BASE}/shop/vapes`, { waitUntil: "networkidle", timeout: 60000 });
+    await page.goto(`${BASE}/shop/vapes`, { waitUntil: "domcontentloaded", timeout: 60000 });
     const cards = await page.locator("a[href^='/products/']").count();
     if (cards < 2) throw new Error(`expected vape products in /shop/vapes, got ${cards}`);
   });
 
   await step("pdp-loads", async () => {
-    await page.goto(`${BASE}/shop`, { waitUntil: "networkidle", timeout: 60000 });
+    await page.goto(`${BASE}/shop`, { waitUntil: "domcontentloaded", timeout: 60000 });
     const cardLink = page.locator("main a[href^='/products/']").first();
     const href = await cardLink.getAttribute("href");
     if (!href) throw new Error("no product card link found in main");
-    await page.goto(`${BASE}${href}`, { waitUntil: "networkidle", timeout: 60000 });
+    await page.goto(`${BASE}${href}`, { waitUntil: "domcontentloaded", timeout: 60000 });
     const title = (await page.locator("h1").first().textContent())?.trim() ?? "";
     if (title.toLowerCase() === "404" || title.length < 5) {
       throw new Error(`PDP h1 looks wrong: "${title}" (url: ${page.url()})`);
@@ -146,7 +146,7 @@ try {
   });
 
   await step("cart-page-shows-item", async () => {
-    await page.goto(`${BASE}/cart`, { waitUntil: "networkidle", timeout: 60000 });
+    await page.goto(`${BASE}/cart`, { waitUntil: "domcontentloaded", timeout: 60000 });
     const heading = await page.locator("h1").first().textContent();
     if (heading?.toLowerCase().includes("empty")) throw new Error("cart is empty after add-to-cart!");
     const removeBtns = await page.locator("button[aria-label='Remove']").count();
@@ -154,24 +154,24 @@ try {
   });
 
   await step("cart-qty-increase", async () => {
-    await page.goto(`${BASE}/cart`, { waitUntil: "networkidle", timeout: 60000 });
+    await page.goto(`${BASE}/cart`, { waitUntil: "domcontentloaded", timeout: 60000 });
     const qtyBefore = (await page.locator("[aria-live='polite'], main span:has-text('1'), main .font-medium").first().textContent())?.trim();
     const incBtn = page.locator("button[aria-label='Increase']").first();
     await incBtn.click();
     await page.waitForTimeout(2500);
-    await page.reload({ waitUntil: "networkidle" });
+    await page.reload({ waitUntil: "domcontentloaded" });
     // Either the visible qty is now > 1, or the order summary subtotal grew
     const removeBtnsAfter = await page.locator("button[aria-label='Remove']").count();
     if (removeBtnsAfter === 0) throw new Error("cart became empty after qty increase");
   });
 
   await step("cart-qty-remove", async () => {
-    await page.goto(`${BASE}/cart`, { waitUntil: "networkidle", timeout: 60000 });
+    await page.goto(`${BASE}/cart`, { waitUntil: "domcontentloaded", timeout: 60000 });
     const removeBefore = await page.locator("button[aria-label='Remove']").count();
     if (removeBefore === 0) throw new Error("nothing to remove in cart");
     await page.locator("button[aria-label='Remove']").first().click();
     await page.waitForTimeout(2500);
-    await page.reload({ waitUntil: "networkidle" });
+    await page.reload({ waitUntil: "domcontentloaded" });
     // After removing every line, cart should be empty (we only had one product)
     const removeAfter = await page.locator("button[aria-label='Remove']").count();
     const heading = (await page.locator("h1").first().textContent())?.toLowerCase() ?? "";
@@ -183,17 +183,17 @@ try {
 
   // Re-add an item for the rest of the test
   await step("re-add-after-remove", async () => {
-    await page.goto(`${BASE}/shop`, { waitUntil: "networkidle", timeout: 60000 });
+    await page.goto(`${BASE}/shop`, { waitUntil: "domcontentloaded", timeout: 60000 });
     const cardLink = page.locator("main a[href^='/products/']").first();
     const href = await cardLink.getAttribute("href");
-    await page.goto(`${BASE}${href}`, { waitUntil: "networkidle", timeout: 60000 });
+    await page.goto(`${BASE}${href}`, { waitUntil: "domcontentloaded", timeout: 60000 });
     const respP = page.waitForResponse((r) => r.url().includes("/api/cart") && r.request().method() === "POST", { timeout: 15000 });
     await page.locator("button:has-text('Add to Cart')").first().click();
     await respP;
   });
 
   await step("checkout-loads", async () => {
-    await page.goto(`${BASE}/checkout`, { waitUntil: "networkidle", timeout: 60000 });
+    await page.goto(`${BASE}/checkout`, { waitUntil: "domcontentloaded", timeout: 60000 });
     const h1 = await page.locator("h1").first().textContent();
     if (!h1?.toLowerCase().includes("checkout")) throw new Error(`expected Checkout h1, got: ${h1}`);
     const optionCount = await page.locator("select option").count();
@@ -255,7 +255,7 @@ try {
     const href = await trackLink.getAttribute("href");
     if (!href?.startsWith("/track/")) throw new Error(`unexpected track href: ${href}`);
     // Navigate explicitly — Link click doesn't always trigger nav in headless test env
-    await page.goto(`${BASE}${href}`, { waitUntil: "networkidle", timeout: 30000 });
+    await page.goto(`${BASE}${href}`, { waitUntil: "domcontentloaded", timeout: 30000 });
     const trackH1 = (await page.locator("h1").first().textContent())?.trim() ?? "";
     if (!trackH1.toLowerCase().startsWith("order ol-")) {
       throw new Error(`expected "Order OL-..." h1 on tracking page, got: ${trackH1} (url: ${page.url()})`);
@@ -276,7 +276,7 @@ try {
     // Fresh browser context with NO age cookie — the modal should appear.
     const ctx2 = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     const p2 = await ctx2.newPage();
-    await p2.goto(`${BASE}/`, { waitUntil: "networkidle", timeout: 60000 });
+    await p2.goto(`${BASE}/`, { waitUntil: "domcontentloaded", timeout: 60000 });
     const modal = await p2.locator("[role='dialog'][aria-labelledby='age-gate-title']").count();
     if (modal === 0) throw new Error("Age gate modal not shown on first visit");
     // Click "Yes, I'm 18+"
@@ -293,7 +293,7 @@ try {
   });
 
   await step("whatsapp-link-href-format", async () => {
-    await page.goto(`${BASE}/`, { waitUntil: "networkidle", timeout: 60000 });
+    await page.goto(`${BASE}/`, { waitUntil: "domcontentloaded", timeout: 60000 });
     const wa = page.locator('a[href^="https://wa.me/"]').first();
     const href = await wa.getAttribute("href");
     // Default placeholder is +18760000000 → digits only = 18760000000
@@ -307,7 +307,7 @@ try {
   });
 
   await step("shop-interactives-do-not-crash", async () => {
-    await page.goto(`${BASE}/shop`, { waitUntil: "networkidle", timeout: 60000 });
+    await page.goto(`${BASE}/shop`, { waitUntil: "domcontentloaded", timeout: 60000 });
     const errors = [];
     page.on("pageerror", (e) => errors.push(e.message));
 
@@ -349,9 +349,9 @@ try {
 
   await step("checkout-rejects-invalid-payment-method", async () => {
     // Need a fresh cart (previous order completed and cleared cookie). Visit a PDP and add to cart.
-    await page.goto(`${BASE}/shop`, { waitUntil: "networkidle", timeout: 60000 });
+    await page.goto(`${BASE}/shop`, { waitUntil: "domcontentloaded", timeout: 60000 });
     const href = await page.locator("main a[href^='/products/']").first().getAttribute("href");
-    await page.goto(`${BASE}${href}`, { waitUntil: "networkidle" });
+    await page.goto(`${BASE}${href}`, { waitUntil: "domcontentloaded" });
     const respP = page.waitForResponse(
       (r) => r.url().includes("/api/cart") && r.request().method() === "POST",
       { timeout: 10000 }
