@@ -12,6 +12,8 @@ export const metadata = {
   description: "Browse vapes, pouches, lighters, drinks, snacks and more.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function ShopPage() {
   const { products } = await fetchProducts({ limit: 100 });
   return (

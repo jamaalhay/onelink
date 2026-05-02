@@ -23,6 +23,8 @@ interface PdpProps {
   params: Promise<{ slug: string }>;
 }
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({ params }: PdpProps) {
   const { slug } = await params;
   const p = await fetchProductByHandle(slug);

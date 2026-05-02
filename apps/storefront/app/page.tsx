@@ -9,6 +9,8 @@ import { HowItWorks } from "@/components/site/how-it-works";
 import { Testimonials } from "@/components/site/testimonials";
 import { WhatsAppCta } from "@/components/site/whatsapp-cta";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const [featured, categories] = await Promise.all([
     fetchFeaturedProducts(8),

@@ -10,6 +10,8 @@ interface CategoryPageProps {
   params: Promise<{ category: string }>;
 }
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({ params }: CategoryPageProps) {
   const { category: slug } = await params;
   const cat = await fetchCategoryByHandle(slug);
