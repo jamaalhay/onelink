@@ -27,14 +27,20 @@ export default async function orderStatusNotify({
         entity: string;
         fields: string[];
         filters?: Record<string, unknown>;
-      }): Promise<{ data: Array<typeof order> }>;
+        pagination?: { take?: number };
+      }): Promise<{ data: Array<{ id: string; display_id?: number | null; shipping_address?: { phone?: string | null } | null; fulfillments?: { id: string }[] }> }>;
     };
+    // Order doesn't expose fulfillments as a queryable filter, so we list a
+    // recent batch and find the one containing this fulfillment id. The
+    // fulfillment was just created, so it's almost always in the first page.
     const { data } = await query.graph({
       entity: "order",
-      fields: ["id", "display_id", "shipping_address.phone"],
-      filters: { fulfillments: { id: fulfillmentId } },
+      fields: ["id", "display_id", "shipping_address.phone", "fulfillments.id"],
+      pagination: { take: 50 },
     });
-    order = data[0];
+    order = data.find((o) =>
+      (o.fulfillments ?? []).some((f) => f.id === fulfillmentId)
+    );
   } catch (err) {
     logger.warn(
       `[${eventName}] could not look up order for fulfillment ${fulfillmentId}: ${(err as Error).message}`
