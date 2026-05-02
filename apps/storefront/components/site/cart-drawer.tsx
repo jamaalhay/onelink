@@ -8,6 +8,7 @@ import {
   SheetTrigger,
   SheetTitle,
   SheetDescription,
+  SheetClose,
 } from "@/components/ui/sheet";
 import { formatJmd } from "@/lib/format";
 import { CartLineItem } from "@/components/site/cart-line-item";
@@ -115,19 +116,27 @@ export function CartDrawer({ cart }: CartDrawerProps) {
                 <p className="text-sm font-medium">Total</p>
                 <p className="text-xl font-semibold">{formatJmd(total)}</p>
               </div>
-              <Link
-                href="/checkout"
-                className="mt-1 h-11 w-full inline-flex items-center justify-center gap-2 rounded-[var(--radius-button)] bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-sm font-medium transition-colors"
+              <SheetClose
+                render={
+                  <Link
+                    href="/checkout"
+                    className="mt-1 h-11 w-full inline-flex items-center justify-center gap-2 rounded-[var(--radius-button)] bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-sm font-medium transition-colors"
+                  />
+                }
               >
                 <ShoppingBag size={16} weight="bold" />
                 Proceed to Checkout
-              </Link>
-              <Link
-                href="/cart"
-                className="block text-center text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+              </SheetClose>
+              <SheetClose
+                render={
+                  <Link
+                    href="/cart"
+                    className="block text-center text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+                  />
+                }
               >
                 View full cart →
-              </Link>
+              </SheetClose>
             </footer>
           </>
         )}

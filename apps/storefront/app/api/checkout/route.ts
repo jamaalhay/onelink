@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { sdk } from "@/lib/medusa/client";
 
 const CART_COOKIE = "onelink_cart_id";
@@ -90,15 +91,19 @@ export async function POST(req: Request) {
     const result = await sdk.store.cart.complete(cartId);
     if (result.type === "order") {
       const res = NextResponse.json({ ok: true, orderId: result.order.id });
+      // Clear cookie + bust layout cache so header re-fetches an empty cart.
+      // Path must match the original cookie's path (set in /api/cart) for the
+      // delete to actually take effect across subsequent requests.
       res.cookies.set({
         name: CART_COOKIE,
         value: "",
-        maxAge: 0,
         path: "/",
         httpOnly: true,
         sameSite: "lax",
         secure: process.env.NODE_ENV === "production",
+        expires: new Date(0),
       });
+      revalidatePath("/", "layout");
       return res;
     }
     return NextResponse.json(

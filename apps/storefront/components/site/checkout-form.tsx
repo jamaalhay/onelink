@@ -167,6 +167,7 @@ function CheckoutFormInner({
           const completeData = await completeRes.json().catch(() => ({}));
           if (completeRes.ok && completeData.ok && completeData.orderId) {
             router.push(`/order/${completeData.orderId}/success`);
+            router.refresh();
           } else {
             setError(
               completeData.error ?? `Could not complete order (${completeRes.status})`
@@ -189,6 +190,7 @@ function CheckoutFormInner({
         const data = await res.json().catch(() => ({}));
         if (res.ok && data.ok && data.orderId) {
           router.push(`/order/${data.orderId}/success`);
+          router.refresh();
         } else {
           setError(data.error ?? `Could not place order (${res.status})`);
         }
