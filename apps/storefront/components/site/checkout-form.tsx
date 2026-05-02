@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -11,6 +11,8 @@ import {
 } from "@stripe/react-stripe-js";
 import type { StripeElementsOptions } from "@stripe/stripe-js";
 import { getStripe, STRIPE_ENABLED } from "@/lib/stripe";
+
+const stripePromise = STRIPE_ENABLED ? getStripe() : null;
 
 export interface CheckoutShippingOption {
   id: string;
@@ -32,23 +34,26 @@ interface CheckoutFormProps {
 // disabled the inner form runs alone — card payments fall back to the no-op
 // system_default provider in /api/checkout, which doesn't need card details.
 export function CheckoutForm(props: CheckoutFormProps) {
-  if (!STRIPE_ENABLED) {
+  // Stripe expects amount in the smallest currency unit (cents). Medusa
+  // stores cart totals in whole units (e.g. 850 JMD for $8.50), so we
+  // multiply by 100. Memoized so the options object identity is stable —
+  // Stripe's Elements remounts on every options change.
+  const options = useMemo<StripeElementsOptions>(
+    () => ({
+      mode: "payment",
+      amount: Math.max((props.cartTotal || 0) * 100, 100),
+      currency: (props.cartCurrency || "jmd").toLowerCase(),
+      appearance: { theme: "stripe" },
+    }),
+    [props.cartTotal, props.cartCurrency]
+  );
+
+  if (!STRIPE_ENABLED || !stripePromise) {
     return <CheckoutFormInner {...props} />;
   }
 
-  // Stripe requires amount in the smallest currency unit. JMD has no
-  // sub-units (Medusa already stores totals in cents-equivalent for currencies
-  // that have them; for JMD it's just whole units). Math.max ensures we don't
-  // pass amount=0 if the cart total isn't loaded yet.
-  const options: StripeElementsOptions = {
-    mode: "payment",
-    amount: Math.max(props.cartTotal || 0, 100),
-    currency: (props.cartCurrency || "jmd").toLowerCase(),
-    appearance: { theme: "stripe" },
-  };
-
   return (
-    <Elements stripe={getStripe()} options={options}>
+    <Elements stripe={stripePromise} options={options}>
       <CheckoutFormInner {...props} />
     </Elements>
   );
