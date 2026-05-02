@@ -1,10 +1,13 @@
 # Onelink Medusa backend — production Docker image for Railway / Fly / etc.
 #
 # Medusa v2's `medusa build` produces a self-contained `.medusa/server/`
-# directory (its own package.json + entry). To serve the admin UI correctly,
-# `medusa start` MUST run with cwd == .medusa/server (otherwise it looks for
-# admin at <project>/public/admin instead of <project>/.medusa/server/public/admin
-# and crashes with "Could not find index.html").
+# directory. To serve the admin UI correctly, `medusa start` MUST run with
+# cwd inside .medusa/server (otherwise it looks for admin at <cwd>/public/admin
+# instead of <build_root>/.medusa/server/public/admin and crashes).
+#
+# We don't re-install node_modules inside .medusa/server — the workspace's
+# /repo/node_modules already has all the @medusajs/* packages (via pnpm), and
+# Node's normal up-the-tree resolution finds them from .medusa/server.
 
 FROM node:20-alpine AS base
 ENV PNPM_HOME=/pnpm
@@ -24,18 +27,18 @@ COPY apps/backend ./apps/backend
 WORKDIR /repo/apps/backend
 RUN pnpm build
 
-# .medusa/server is a fresh project with its own package.json. Install its
-# production dependencies so `medusa start` can resolve them at runtime.
-WORKDIR /repo/apps/backend/.medusa/server
-RUN npm install --omit=dev --no-audit --no-fund --legacy-peer-deps
-
-# ── runtime — slim image, only the built server output + its node_modules ──
+# ── runtime — workspace node_modules + the backend project tree ────────────
 FROM base AS runner
 ENV NODE_ENV=production
-WORKDIR /server
-COPY --from=builder /repo/apps/backend/.medusa/server ./
+WORKDIR /repo
+COPY --from=builder /repo/node_modules ./node_modules
+COPY --from=builder /repo/apps/backend ./apps/backend
+
+# medusa start MUST run from inside .medusa/server so it resolves the admin
+# build at <cwd>/public/admin. Node module resolution walks up to find the
+# workspace's /repo/node_modules.
+WORKDIR /repo/apps/backend/.medusa/server
 
 EXPOSE 9000
 
-# medusa start uses cwd to find admin/public/admin — must be /server here.
-CMD ["npx", "medusa", "start"]
+CMD ["sh", "-c", "pnpm exec medusa start"]
