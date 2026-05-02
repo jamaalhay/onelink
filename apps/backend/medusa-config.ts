@@ -71,8 +71,11 @@ module.exports = defineConfig({
                     accountSid: process.env.TWILIO_ACCOUNT_SID,
                     authToken: process.env.TWILIO_AUTH_TOKEN,
                     fromNumber: process.env.TWILIO_FROM_NUMBER,
+                    // Notification module reads channels off provider.options.channels
+                    // (not the top-level provider.channels — counterintuitive but
+                    // it's how @medusajs/notification's loader is wired).
+                    channels: ["sms"],
                   },
-                  channels: ["sms"],
                 },
               ],
             },
