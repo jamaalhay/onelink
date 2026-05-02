@@ -36,7 +36,7 @@ module.exports = defineConfig({
   // for the Vercel storefront. Re-enable later once the Vite admin build
   // artifact path is sorted.
   admin: {
-    disable: process.env.MEDUSA_DISABLE_ADMIN === "true",
+    disable: true,
   },
   modules: [
     {
