@@ -56,31 +56,49 @@ module.exports = defineConfig({
         ],
       },
     },
-    // Notification module — Twilio SMS provider handles the "sms" channel.
-    // Only registers when Twilio creds are present so dev/staging boot clean.
-    ...(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_FROM_NUMBER
-      ? [
-          {
-            resolve: "@medusajs/medusa/notification",
-            options: {
-              providers: [
-                {
-                  resolve: "./src/modules/twilio-sms",
-                  id: "twilio-sms",
-                  options: {
-                    accountSid: process.env.TWILIO_ACCOUNT_SID,
-                    authToken: process.env.TWILIO_AUTH_TOKEN,
-                    fromNumber: process.env.TWILIO_FROM_NUMBER,
-                    // Notification module reads channels off provider.options.channels
-                    // (not the top-level provider.channels — counterintuitive but
-                    // it's how @medusajs/notification's loader is wired).
-                    channels: ["sms"],
-                  },
-                },
-              ],
-            },
+    // Notification module — registers any combination of Twilio SMS + Resend
+    // email that is configured via env. If neither is set the module is omitted
+    // so dev/staging boots cleanly.
+    ...(() => {
+      const providers: Array<Record<string, unknown>> = [];
+      if (
+        process.env.TWILIO_ACCOUNT_SID &&
+        process.env.TWILIO_AUTH_TOKEN &&
+        process.env.TWILIO_FROM_NUMBER
+      ) {
+        providers.push({
+          resolve: "./src/modules/twilio-sms",
+          id: "twilio-sms",
+          options: {
+            accountSid: process.env.TWILIO_ACCOUNT_SID,
+            authToken: process.env.TWILIO_AUTH_TOKEN,
+            fromNumber: process.env.TWILIO_FROM_NUMBER,
+            // Channels go inside provider.options.channels (not top-level —
+            // counterintuitive but it's how @medusajs/notification's loader
+            // reads them).
+            channels: ["sms"],
           },
-        ]
-      : []),
+        });
+      }
+      if (process.env.RESEND_API_KEY) {
+        providers.push({
+          resolve: "./src/modules/resend-email",
+          id: "resend-email",
+          options: {
+            apiKey: process.env.RESEND_API_KEY,
+            from: process.env.RESEND_FROM ?? "Onelink <onboarding@resend.dev>",
+            channels: ["email"],
+          },
+        });
+      }
+      return providers.length
+        ? [
+            {
+              resolve: "@medusajs/medusa/notification",
+              options: { providers },
+            },
+          ]
+        : [];
+    })(),
   ],
 })
