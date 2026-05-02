@@ -27,7 +27,7 @@ RUN pnpm build
 # .medusa/server is a fresh project with its own package.json. Install its
 # production dependencies so `medusa start` can resolve them at runtime.
 WORKDIR /repo/apps/backend/.medusa/server
-RUN npm install --omit=dev --no-audit --no-fund
+RUN npm install --omit=dev --no-audit --no-fund --legacy-peer-deps
 
 # ── runtime — slim image, only the built server output + its node_modules ──
 FROM base AS runner
