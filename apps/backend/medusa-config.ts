@@ -32,6 +32,12 @@ module.exports = defineConfig({
       cookieSecret: process.env.COOKIE_SECRET || "supersecret",
     },
   },
+  // Skip serving the admin UI from this container — the API alone is enough
+  // for the Vercel storefront. Re-enable later once the Vite admin build
+  // artifact path is sorted.
+  admin: {
+    disable: process.env.MEDUSA_DISABLE_ADMIN === "true",
+  },
   modules: [
     {
       resolve: "@medusajs/medusa/payment",
