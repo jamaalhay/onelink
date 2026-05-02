@@ -56,5 +56,28 @@ module.exports = defineConfig({
         ],
       },
     },
+    // Notification module — Twilio SMS provider handles the "sms" channel.
+    // Only registers when Twilio creds are present so dev/staging boot clean.
+    ...(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_FROM_NUMBER
+      ? [
+          {
+            resolve: "@medusajs/medusa/notification",
+            options: {
+              providers: [
+                {
+                  resolve: "./src/modules/twilio-sms",
+                  id: "twilio-sms",
+                  options: {
+                    accountSid: process.env.TWILIO_ACCOUNT_SID,
+                    authToken: process.env.TWILIO_AUTH_TOKEN,
+                    fromNumber: process.env.TWILIO_FROM_NUMBER,
+                  },
+                  channels: ["sms"],
+                },
+              ],
+            },
+          },
+        ]
+      : []),
   ],
 })
