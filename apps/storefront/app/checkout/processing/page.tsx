@@ -1,12 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 
 // Landing page Stripe redirects to after 3DS authentication. Reads the
 // payment_intent params, completes the order, and forwards to /order/.../success.
 // Non-3DS card flows skip this entirely (Stripe.js stays in-page).
 export default function CheckoutProcessing() {
+  return (
+    <Suspense fallback={<Pending />}>
+      <ProcessingInner />
+    </Suspense>
+  );
+}
+
+function ProcessingInner() {
   const router = useRouter();
   const params = useSearchParams();
   const [error, setError] = useState<string | null>(null);
@@ -41,27 +51,30 @@ export default function CheckoutProcessing() {
     })();
   }, [params, router]);
 
+  if (error) {
+    return (
+      <section className="mx-auto max-w-md px-4 py-20 text-center space-y-4">
+        <h1 className="text-2xl font-semibold tracking-tight">Payment problem</h1>
+        <p className="text-sm text-[var(--color-text-muted)]">{error}</p>
+        <a
+          href="/checkout"
+          className="inline-flex items-center justify-center h-11 px-5 rounded-[var(--radius-button)] border border-[var(--color-border)] hover:bg-[var(--color-surface)] font-medium"
+        >
+          Back to checkout
+        </a>
+      </section>
+    );
+  }
+  return <Pending />;
+}
+
+function Pending() {
   return (
     <section className="mx-auto max-w-md px-4 py-20 text-center space-y-4">
-      {error ? (
-        <>
-          <h1 className="text-2xl font-semibold tracking-tight">Payment problem</h1>
-          <p className="text-sm text-[var(--color-text-muted)]">{error}</p>
-          <a
-            href="/checkout"
-            className="inline-flex items-center justify-center h-11 px-5 rounded-[var(--radius-button)] border border-[var(--color-border)] hover:bg-[var(--color-surface)] font-medium"
-          >
-            Back to checkout
-          </a>
-        </>
-      ) : (
-        <>
-          <h1 className="text-2xl font-semibold tracking-tight">Confirming your payment…</h1>
-          <p className="text-sm text-[var(--color-text-muted)]">
-            Hold tight — finishing up with the bank.
-          </p>
-        </>
-      )}
+      <h1 className="text-2xl font-semibold tracking-tight">Confirming your payment…</h1>
+      <p className="text-sm text-[var(--color-text-muted)]">
+        Hold tight — finishing up with the bank.
+      </p>
     </section>
   );
 }

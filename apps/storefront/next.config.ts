@@ -6,9 +6,6 @@ const nextConfig: NextConfig = {
     // post-launch. Production build must not block on those.
     ignoreBuildErrors: true,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
 };
 
 export default nextConfig;
