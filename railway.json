@@ -5,7 +5,7 @@
     "dockerfilePath": "Dockerfile"
   },
   "deploy": {
-    "startCommand": "/repo/node_modules/.bin/medusa start",
+    "startCommand": "/repo/apps/backend/node_modules/.bin/medusa start",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 600,
     "restartPolicyType": "ON_FAILURE",
