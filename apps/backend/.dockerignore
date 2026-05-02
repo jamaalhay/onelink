@@ -1,0 +1,12 @@
+node_modules
+.medusa
+dist
+*.log
+.env
+.env.local
+.env.*.local
+.git
+.DS_Store
+README.md
+src/migration-scripts/__tests__
+src/modules/cod-payment/__tests__

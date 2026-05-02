@@ -1,0 +1,105 @@
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { sdk } from "@/lib/medusa/client";
+import { getRegionId } from "@/lib/medusa/server";
+
+const CART_COOKIE = "onelink_cart_id";
+const CART_COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
+
+const cartCookieOptions = {
+  maxAge: CART_COOKIE_MAX_AGE,
+  httpOnly: true,
+  sameSite: "lax" as const,
+  secure: process.env.NODE_ENV === "production",
+  path: "/",
+};
+
+async function getCartId(): Promise<string | undefined> {
+  const c = await cookies();
+  return c.get(CART_COOKIE)?.value;
+}
+
+async function ensureCart(): Promise<string> {
+  const existing = await getCartId();
+  if (existing) {
+    try {
+      const { cart } = await sdk.store.cart.retrieve(existing, { fields: "id,completed_at" });
+      if (cart && !cart.completed_at) return cart.id;
+    } catch {
+      /* fall through and create new */
+    }
+  }
+  const regionId = await getRegionId();
+  if (!regionId) throw new Error("No region configured");
+  const { cart } = await sdk.store.cart.create({ region_id: regionId });
+  return cart.id;
+}
+
+interface AddPayload {
+  variant_id: string;
+  quantity?: number;
+}
+
+export async function POST(req: Request) {
+  try {
+    const body = (await req.json()) as AddPayload;
+    if (!body.variant_id) {
+      return NextResponse.json({ error: "variant_id is required" }, { status: 400 });
+    }
+    const cartId = await ensureCart();
+    await sdk.store.cart.createLineItem(cartId, {
+      variant_id: body.variant_id,
+      quantity: body.quantity ?? 1,
+    });
+    const res = NextResponse.json({ ok: true, cartId });
+    res.cookies.set(CART_COOKIE, cartId, cartCookieOptions);
+    return res;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[api/cart] POST error:", msg);
+    return NextResponse.json({ ok: false, error: msg }, { status: 500 });
+  }
+}
+
+interface PatchPayload {
+  line_item_id: string;
+  quantity: number;
+}
+
+export async function PATCH(req: Request) {
+  try {
+    const body = (await req.json()) as PatchPayload;
+    const cartId = await getCartId();
+    if (!cartId) {
+      return NextResponse.json({ error: "No cart" }, { status: 400 });
+    }
+    if (body.quantity <= 0) {
+      await sdk.store.cart.deleteLineItem(cartId, body.line_item_id);
+    } else {
+      await sdk.store.cart.updateLineItem(cartId, body.line_item_id, { quantity: body.quantity });
+    }
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ ok: false, error: msg }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const url = new URL(req.url);
+    const lineItemId = url.searchParams.get("line_item_id");
+    if (!lineItemId) {
+      return NextResponse.json({ error: "line_item_id is required" }, { status: 400 });
+    }
+    const cartId = await getCartId();
+    if (!cartId) {
+      return NextResponse.json({ error: "No cart" }, { status: 400 });
+    }
+    await sdk.store.cart.deleteLineItem(cartId, lineItemId);
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ ok: false, error: msg }, { status: 500 });
+  }
+}

@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      :root {
+        --bg: #20242C;
+        --bg-soft: #2A2F38;
+        --text: #FFFFFF;
+        --text-muted: rgba(255,255,255,0.65);
+        --text-dim: rgba(255,255,255,0.4);
+        --border: rgba(255,255,255,0.08);
+        --accent: #2F8BD8;
+        --accent-soft: rgba(47,139,216,0.16);
+      }
+      html, body {
+        width: 1920px; height: 1080px; overflow: hidden;
+        background: var(--bg); color: var(--text);
+        font-family: 'Geist', system-ui, -apple-system, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        font-feature-settings: "ss01" on, "ss03" on;
+      }
+
+      /* Timeline-controlled visibility — clip class is required */
+      .clip { opacity: 1; }
+
+      /* ------- Title / outro cards ------- */
+      .title-card {
+        position: absolute; inset: 0;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        padding: 0 160px; text-align: center;
+        background: radial-gradient(ellipse at 50% 60%, #2A2F38 0%, #20242C 70%);
+      }
+      .title-card .eyebrow {
+        font-size: 22px; font-weight: 500;
+        letter-spacing: 0.16em; text-transform: uppercase;
+        color: var(--text-muted); margin-bottom: 32px;
+      }
+      .title-card h1 {
+        font-size: 156px; font-weight: 600; line-height: 0.98;
+        letter-spacing: -0.04em; color: var(--text); margin-bottom: 32px;
+      }
+      .title-card h1 .accent { color: var(--accent); }
+      .title-card .sub {
+        font-size: 32px; line-height: 1.45; color: var(--text-muted);
+        max-width: 1080px; font-weight: 400;
+      }
+
+      .outro-card .ctas { margin-top: 48px; display: flex; gap: 16px; align-items: center; }
+      .outro-card .pill {
+        height: 56px; padding: 0 28px; border-radius: 28px;
+        display: inline-flex; align-items: center; gap: 12px;
+        font-size: 20px; font-weight: 500;
+      }
+      .outro-card .pill.primary { background: var(--accent); color: white; }
+      .outro-card .pill.ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+
+      /* ------- Page-walkthrough scene ------- */
+      .page-scene {
+        position: absolute; inset: 0;
+        display: grid;
+        grid-template-columns: 1100px 1fr;
+        gap: 80px; padding: 80px;
+        align-items: center;
+      }
+
+      /* Browser frame */
+      .frame {
+        width: 1100px; height: 920px;
+        background: #2A2F38; border: 1px solid var(--border);
+        border-radius: 18px; overflow: hidden;
+        box-shadow: 0 40px 100px -30px rgba(0,0,0,0.6),
+                    0 0 0 1px rgba(255,255,255,0.04);
+        display: flex; flex-direction: column;
+      }
+      .frame .titlebar {
+        height: 44px; padding: 0 18px;
+        display: flex; align-items: center; gap: 8px;
+        background: #2A2F38; border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+      .frame .dot { width: 12px; height: 12px; border-radius: 50%; }
+      .frame .dot.r { background: #FF5F56; }
+      .frame .dot.y { background: #FFBD2E; }
+      .frame .dot.g { background: #27C93F; }
+      .frame .url {
+        margin-left: 24px;
+        font-family: 'Geist Mono', ui-monospace, monospace;
+        font-size: 13px; color: var(--text-muted);
+        background: rgba(255,255,255,0.04);
+        border-radius: 6px; padding: 6px 12px;
+        min-width: 320px; text-align: center;
+      }
+      .frame .viewport {
+        flex: 1; position: relative; overflow: hidden;
+        background: #FFFFFF;
+      }
+      .frame .viewport img {
+        position: absolute; top: 0; left: 0;
+        width: 100%; height: auto; display: block;
+        transform: translateZ(0); /* GPU layer */
+      }
+
+      /* Callout */
+      .callout { display: flex; flex-direction: column; gap: 24px; }
+      .callout .step {
+        font-size: 18px; font-weight: 500;
+        letter-spacing: 0.16em; text-transform: uppercase;
+        color: var(--accent); display: inline-flex; align-items: center; gap: 12px;
+      }
+      .callout .step .num {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 36px; height: 36px; border-radius: 18px;
+        background: var(--accent-soft); color: var(--accent);
+        font-size: 16px; letter-spacing: 0;
+      }
+      .callout h2 {
+        font-size: 88px; font-weight: 600; line-height: 1.02;
+        letter-spacing: -0.03em; color: var(--text);
+      }
+      .callout p {
+        font-size: 26px; line-height: 1.45; color: var(--text-muted);
+        max-width: 620px; font-weight: 400;
+      }
+      .callout .tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+      .callout .tag {
+        font-size: 16px; font-weight: 500; line-height: 1;
+        padding: 10px 16px; border-radius: 999px;
+        border: 1px solid var(--border); color: var(--text-muted);
+        background: rgba(255,255,255,0.02);
+      }
+
+      /* Brand mark inline */
+      .brandmark { display: inline-flex; align-items: center; gap: 12px; }
+      .brandmark .wordmark { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+
+      /* Watermark on every scene */
+      .watermark {
+        position: absolute; bottom: 32px; right: 48px;
+        display: flex; align-items: center; gap: 10px;
+        opacity: 0.55;
+      }
+      .watermark .label { font-size: 14px; color: var(--text-muted); letter-spacing: 0.04em; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="35" data-width="1920" data-height="1080">
+
+      <!-- ─── 0–3s · Intro ────────────────────────────────────────── -->
+      <div class="clip title-card" id="intro" data-start="0" data-duration="3.2" data-track-index="1">
+        <svg id="intro-mark" width="220" height="80" viewBox="0 0 96 32" fill="none" style="margin-bottom: 32px;">
+          <g stroke="#2F8BD8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+            <ellipse cx="34" cy="16" rx="14" ry="10" />
+            <ellipse cx="62" cy="16" rx="14" ry="10" />
+            <path d="M 18 16 L 4 16 M 9 11 L 4 16 L 9 21" />
+            <path d="M 78 16 L 92 16 M 87 11 L 92 16 L 87 21" />
+          </g>
+        </svg>
+        <div class="eyebrow">Innovative · Helpful · Essential</div>
+        <h1>One link.<br /><span class="accent">Endless possibilities</span>.</h1>
+        <div class="sub">Premium delivery in Kingston, Jamaica — in 15&ndash;30 minutes.</div>
+      </div>
+
+      <!-- ─── 3.2–7.7s · Home ───────────────────────────────────── -->
+      <div class="clip page-scene" id="scene-home" data-start="3.2" data-duration="4.5" data-track-index="1">
+        <div class="frame">
+          <div class="titlebar">
+            <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+            <span class="url">onelink.shop</span>
+          </div>
+          <div class="viewport">
+            <img id="img-home" src="assets/screens/01-home.png" alt="Onelink home" />
+          </div>
+        </div>
+        <div class="callout">
+          <span class="step"><span class="num">01</span>The Storefront</span>
+          <h2>Premium products.<br />Delivered fast.</h2>
+          <p>The homepage opens with the brand promise, surfaces categories, best sellers, and a 4-step explainer of how it works.</p>
+          <div class="tags">
+            <span class="tag">Hero · Split layout</span>
+            <span class="tag">7 categories</span>
+            <span class="tag">Trust strip</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── 7.7–11.7s · Shop ──────────────────────────────────── -->
+      <div class="clip page-scene" id="scene-shop" data-start="7.7" data-duration="4" data-track-index="1">
+        <div class="frame">
+          <div class="titlebar">
+            <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+            <span class="url">onelink.shop/shop</span>
+          </div>
+          <div class="viewport">
+            <img id="img-shop" src="assets/screens/02-shop.png" alt="Shop" />
+          </div>
+        </div>
+        <div class="callout">
+          <span class="step"><span class="num">02</span>Browse</span>
+          <h2>Filter and sort,<br />without the clutter.</h2>
+          <p>Category chips up top, faceted filter sidebar, and a 4-column product grid with price, rating, and stock state.</p>
+          <div class="tags">
+            <span class="tag">Category chips</span>
+            <span class="tag">Filter sidebar</span>
+            <span class="tag">JMD pricing</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── 11.7–16.2s · PDP ──────────────────────────────────── -->
+      <div class="clip page-scene" id="scene-pdp" data-start="11.7" data-duration="4.5" data-track-index="1">
+        <div class="frame">
+          <div class="titlebar">
+            <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+            <span class="url">onelink.shop/products/vuse-go-1000</span>
+          </div>
+          <div class="viewport">
+            <img id="img-pdp" src="assets/screens/03-pdp.png" alt="Product detail" />
+          </div>
+        </div>
+        <div class="callout">
+          <span class="step"><span class="num">03</span>Product</span>
+          <h2>Pick a flavor.<br />Add to cart.</h2>
+          <p>Image gallery, variant picker, delivery reassurance, expandable details, and related products from the same category.</p>
+          <div class="tags">
+            <span class="tag">Variant logic</span>
+            <span class="tag">Buy Now</span>
+            <span class="tag">WhatsApp inline</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── 16.2–19.4s · Cart drawer ──────────────────────────── -->
+      <div class="clip page-scene" id="scene-cart" data-start="16.2" data-duration="3.2" data-track-index="1">
+        <div class="frame">
+          <div class="titlebar">
+            <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+            <span class="url">onelink.shop/cart</span>
+          </div>
+          <div class="viewport">
+            <img id="img-cart" src="assets/screens/04a-cart-drawer.png" alt="Cart drawer" />
+          </div>
+        </div>
+        <div class="callout">
+          <span class="step"><span class="num">04</span>Cart</span>
+          <h2>Slide-out drawer.<br />Or full page.</h2>
+          <p>Mini-cart drawer for quick review without leaving the page; full cart page when the user wants more room.</p>
+          <div class="tags">
+            <span class="tag">Drawer overlay</span>
+            <span class="tag">Promo code</span>
+            <span class="tag">Subtotal · ETA</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── 19.4–22.8s · Checkout ─────────────────────────────── -->
+      <div class="clip page-scene" id="scene-checkout" data-start="19.4" data-duration="3.4" data-track-index="1">
+        <div class="frame">
+          <div class="titlebar">
+            <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+            <span class="url">onelink.shop/checkout</span>
+          </div>
+          <div class="viewport">
+            <img id="img-checkout" src="assets/screens/05-checkout.png" alt="Checkout" />
+          </div>
+        </div>
+        <div class="callout">
+          <span class="step"><span class="num">05</span>Checkout</span>
+          <h2>Four steps.<br />Card or cash.</h2>
+          <p>Information, delivery, payment, review. Stripe-ready for cards, custom provider for cash on delivery.</p>
+        </div>
+      </div>
+
+      <!-- ─── 22.8–25.8s · Confirmation ─────────────────────────── -->
+      <div class="clip page-scene" id="scene-success" data-start="22.8" data-duration="3" data-track-index="1">
+        <div class="frame">
+          <div class="titlebar">
+            <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+            <span class="url">onelink.shop/order/.../success</span>
+          </div>
+          <div class="viewport">
+            <img id="img-success" src="assets/screens/06-success.png" alt="Order confirmed" />
+          </div>
+        </div>
+        <div class="callout">
+          <span class="step"><span class="num">06</span>Confirmed</span>
+          <h2>Order placed.<br />Rider on the way.</h2>
+          <p>Confirmation routes the customer into tracking — no hunting for the link in an email.</p>
+        </div>
+      </div>
+
+      <!-- ─── 25.8–29s · Tracking ───────────────────────────────── -->
+      <div class="clip page-scene" id="scene-track" data-start="25.8" data-duration="3.2" data-track-index="1">
+        <div class="frame">
+          <div class="titlebar">
+            <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+            <span class="url">onelink.shop/track/...</span>
+          </div>
+          <div class="viewport">
+            <img id="img-track" src="assets/screens/07-track.png" alt="Live tracking" />
+          </div>
+        </div>
+        <div class="callout">
+          <span class="step"><span class="num">07</span>Tracking</span>
+          <h2>Six stages.<br />Live rider.</h2>
+          <p>Received → Confirmed → Preparing → Rider Assigned → Out for Delivery → Delivered. Plus driver card and WhatsApp updates.</p>
+        </div>
+      </div>
+
+      <!-- ─── 29–35s · Outro ─────────────────────────────────────── -->
+      <div class="clip title-card outro-card" id="outro" data-start="29" data-duration="6" data-track-index="1">
+        <svg id="outro-mark" width="260" height="92" viewBox="0 0 96 32" fill="none" style="margin-bottom: 32px;">
+          <g stroke="#2F8BD8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+            <ellipse cx="34" cy="16" rx="14" ry="10" />
+            <ellipse cx="62" cy="16" rx="14" ry="10" />
+            <path d="M 18 16 L 4 16 M 9 11 L 4 16 L 9 21" />
+            <path d="M 78 16 L 92 16 M 87 11 L 92 16 L 87 21" />
+          </g>
+        </svg>
+        <div class="eyebrow">Coming soon to Kingston</div>
+        <h1>Onelink.</h1>
+        <div class="sub">One Link. Endless Possibilities. Innovative. Helpful. Essential.</div>
+      </div>
+    </div>
+
+    <script>
+      // Register the timeline so HyperFrames can scrub it deterministically
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power2.out" } });
+      window.__timelines.main = tl;
+
+      // ── Intro ────────────────────────────────────────────────────
+      tl.fromTo(
+        "#intro-mark",
+        { opacity: 0, scale: 0.92 },
+        { opacity: 1, scale: 1, duration: 0.6 },
+        0
+      )
+        .fromTo("#intro .eyebrow", { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5 }, 0.15)
+        .fromTo("#intro h1", { y: 28, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7 }, 0.3)
+        .fromTo("#intro .sub", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6 }, 0.55)
+        .to("#intro", { opacity: 0, duration: 0.4 }, 2.8);
+
+      // ── Page-scene helper ────────────────────────────────────────
+      function pageScene(sel, imgSel, start, duration, scrollPercent) {
+        const sceneStart = start;
+        const sceneEnd = start + duration;
+        const enter = sceneStart;
+        const settle = sceneStart + 0.2;
+        const fadeOut = sceneEnd - 0.4;
+
+        // Scroll image: from top:0 to top:-(image_overflow * scrollPercent)
+        // Use translateY % of own height — 0% to a negative %.
+        const scrollTo = `${-Math.max(0, (scrollPercent ?? 0))}%`;
+
+        tl.fromTo(
+          `${sel} .frame`,
+          { opacity: 0, x: -40 },
+          { opacity: 1, x: 0, duration: 0.7 },
+          enter
+        )
+          .fromTo(
+            `${sel} .callout`,
+            { opacity: 0, x: 40 },
+            { opacity: 1, x: 0, duration: 0.7 },
+            enter + 0.1
+          )
+          .fromTo(
+            imgSel,
+            { y: "0%" },
+            { y: scrollTo, duration: duration - 0.5, ease: "none" },
+            settle
+          )
+          .to(sel, { opacity: 0, duration: 0.4 }, fadeOut);
+      }
+
+      // Scroll percentages calibrated per page height (image height ~ from screenshot).
+      // Numbers are conservative — show top half then drift through middle/bottom.
+      pageScene("#scene-home",     "#img-home",     3.2, 4.5, 70);
+      pageScene("#scene-shop",     "#img-shop",     7.7, 4.0, 65);
+      pageScene("#scene-pdp",      "#img-pdp",      11.7, 4.5, 60);
+      pageScene("#scene-cart",     "#img-cart",     16.2, 3.2, 0);
+      pageScene("#scene-checkout", "#img-checkout", 19.4, 3.4, 50);
+      pageScene("#scene-success",  "#img-success",  22.8, 3.0, 30);
+      pageScene("#scene-track",    "#img-track",    25.8, 3.2, 50);
+
+      // ── Outro ────────────────────────────────────────────────────
+      tl.fromTo("#outro-mark", { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.7 }, 29)
+        .fromTo("#outro .eyebrow", { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5 }, 29.2)
+        .fromTo("#outro h1", { y: 28, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8 }, 29.4)
+        .fromTo("#outro .sub", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6 }, 29.7);
+    </script>
+  </body>
+</html>

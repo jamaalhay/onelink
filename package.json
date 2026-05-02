@@ -1,0 +1,14 @@
+{
+  "name": "onelink",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Onelink — premium local delivery marketplace for Kingston, Jamaica",
+  "scripts": {
+    "dev": "pnpm --filter @onelink/storefront dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint"
+  },
+  "dependencies": {
+    "zod": "~3.25.76"
+  }
+}

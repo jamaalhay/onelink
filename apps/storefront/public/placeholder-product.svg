@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid meet">
+  <rect width="800" height="1000" fill="#FAFAFA" />
+  <g transform="translate(400 460)" stroke="#9CA3AF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <ellipse cx="-30" cy="0" rx="36" ry="24" />
+    <ellipse cx="30" cy="0" rx="36" ry="24" />
+    <path d="M -90 0 L -120 0 M -110 -8 L -120 0 L -110 8" />
+    <path d="M 90 0 L 120 0 M 110 -8 L 120 0 L 110 8" />
+  </g>
+  <text x="400" y="600" text-anchor="middle" font-family="ui-sans-serif, system-ui" font-size="22" font-weight="500" fill="#9CA3AF" letter-spacing="2.5">PRODUCT IMAGE</text>
+</svg>
