@@ -24,6 +24,13 @@ const stripeProviders = process.env.STRIPE_API_KEY
 module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
+    // Supabase free tier caps direct connections; default Medusa/Knex pool
+    // (10) plus a brief overlap during deploys exhausts the slots and Pg
+    // refuses with "remaining connection slots are reserved for roles with
+    // SUPERUSER attribute". 4 is enough for a single-replica hobby instance.
+    databaseDriverOptions: {
+      pool: { min: 0, max: 4 },
+    },
     http: {
       storeCors: process.env.STORE_CORS!,
       adminCors: process.env.ADMIN_CORS!,
