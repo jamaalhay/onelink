@@ -29,8 +29,9 @@ export function DemoNav() {
   const pathname = usePathname() ?? "/";
 
   return (
-    <div
+    <aside
       id="onelink-demo-nav"
+      aria-label="Demo navigation"
       style={{ position: "relative", zIndex: 100 }}
       className="pointer-events-auto bg-[#FBE9C2] text-[#5C4612] border-b border-[#F0CB7A]"
     >
@@ -58,6 +59,6 @@ export function DemoNav() {
           );
         })}
       </div>
-    </div>
+    </aside>
   );
 }

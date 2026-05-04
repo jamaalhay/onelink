@@ -9,7 +9,7 @@ import { formatEtaRange } from "@/lib/format";
 export function TopDeliveryBar() {
   const { name, etaMin, etaMax } = defaultZone;
   return (
-    <div className="section-dark text-sm">
+    <aside aria-label="Delivery zone" className="section-dark text-sm">
       <div className="mx-auto max-w-[1400px] px-4 lg:px-10 h-10 flex items-center justify-between gap-4">
         <div className="flex items-center gap-4 text-white/90">
           <span className="flex items-center gap-1.5">
@@ -28,6 +28,6 @@ export function TopDeliveryBar() {
           Change
         </button>
       </div>
-    </div>
+    </aside>
   );
 }

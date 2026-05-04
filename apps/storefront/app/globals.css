@@ -20,7 +20,7 @@
   /* ── Brand text ───────────────────────────────── */
   --color-text: #20242C;
   --color-text-muted: #6B7280;
-  --color-text-dim: #9CA3AF;
+  --color-text-dim: #737373;
 
   /* ── Brand borders ────────────────────────────── */
   --color-border: #E9E9EA;
@@ -31,7 +31,7 @@
   --color-accent-hover: #267BC2;
 
   /* ── Status ───────────────────────────────────── */
-  --color-success: #10B981;
+  --color-success: #047857;
   --color-warning: #F59E0B;
   --color-danger:  #DC2626;
 

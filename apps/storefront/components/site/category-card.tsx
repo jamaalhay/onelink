@@ -15,7 +15,7 @@ export function CategoryCard({ category }: CategoryCardProps) {
       <div className="relative w-20 h-20 rounded-full overflow-hidden bg-[var(--color-bg-alt)]">
         <Image
           src={category.imageUrl}
-          alt={category.name}
+          alt=""
           fill
           sizes="80px"
           className="object-cover transition-transform duration-300 group-hover:scale-110"

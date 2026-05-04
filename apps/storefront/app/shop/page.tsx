@@ -54,6 +54,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
         <div className="grid lg:grid-cols-[15rem_1fr] gap-10">
           <FilterSidebar />
           <div>
+            <h2 className="sr-only">Products</h2>
             <SortBar count={products.length} />
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
               {products.map((p) => (

@@ -44,6 +44,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       </section>
 
       <section className="mx-auto max-w-[1400px] px-4 lg:px-10 py-10">
+        <h2 className="sr-only">{cat.name} products</h2>
         <div className="grid lg:grid-cols-[15rem_1fr] gap-10">
           <FilterSidebar />
           <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
