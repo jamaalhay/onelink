@@ -24,20 +24,20 @@ export default function ContactPage() {
         <ul>
           <li>
             <strong>General:</strong>{" "}
-            <a href="mailto:hello@onelink.example" className="underline">
-              hello@onelink.example
+            <a href="mailto:hello@onelinkjm.com" className="underline">
+              hello@onelinkjm.com
             </a>
           </li>
           <li>
             <strong>Privacy / data requests:</strong>{" "}
-            <a href="mailto:privacy@onelink.example" className="underline">
-              privacy@onelink.example
+            <a href="mailto:privacy@onelinkjm.com" className="underline">
+              privacy@onelinkjm.com
             </a>
           </li>
           <li>
             <strong>Press:</strong>{" "}
-            <a href="mailto:press@onelink.example" className="underline">
-              press@onelink.example
+            <a href="mailto:press@onelinkjm.com" className="underline">
+              press@onelinkjm.com
             </a>
           </li>
         </ul>

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { InstagramLogo, WhatsappLogo } from "@phosphor-icons/react/dist/ssr";
+import { whatsappLink } from "@/lib/whatsapp";
 
 const columns = [
   {
@@ -60,7 +61,7 @@ export function Footer() {
               <InstagramLogo size={22} />
             </Link>
             <Link
-              href="https://wa.me/18760000000"
+              href={whatsappLink()}
               aria-label="WhatsApp"
               className="hover:text-[var(--color-whatsapp)] transition-colors"
             >

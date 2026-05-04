@@ -23,8 +23,8 @@ export default function CareersPage() {
         </ul>
         <p>
           Email your name, area, and a bit about your experience to{" "}
-          <a href="mailto:riders@onelink.example" className="underline">
-            riders@onelink.example
+          <a href="mailto:riders@onelinkjm.com" className="underline">
+            riders@onelinkjm.com
           </a>
           .
         </p>
@@ -38,8 +38,8 @@ export default function CareersPage() {
         </p>
         <p>
           Email{" "}
-          <a href="mailto:hello@onelink.example" className="underline">
-            hello@onelink.example
+          <a href="mailto:hello@onelinkjm.com" className="underline">
+            hello@onelinkjm.com
           </a>{" "}
           with &ldquo;Ops Support&rdquo; in the subject line.
         </p>

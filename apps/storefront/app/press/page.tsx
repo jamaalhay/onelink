@@ -23,8 +23,8 @@ export default function PressPage() {
       <InfoSection heading="Brand assets">
         <p>
           For logo, wordmark, lockup, and product photography, contact{" "}
-          <a href="mailto:press@onelink.example" className="underline">
-            press@onelink.example
+          <a href="mailto:press@onelinkjm.com" className="underline">
+            press@onelinkjm.com
           </a>{" "}
           and we&apos;ll send a press kit.
         </p>
@@ -33,8 +33,8 @@ export default function PressPage() {
       <InfoSection heading="Interviews">
         <p>
           Reach out to{" "}
-          <a href="mailto:press@onelink.example" className="underline">
-            press@onelink.example
+          <a href="mailto:press@onelinkjm.com" className="underline">
+            press@onelinkjm.com
           </a>{" "}
           to schedule. Please include outlet, deadline, and topic. We try to reply within one
           business day.

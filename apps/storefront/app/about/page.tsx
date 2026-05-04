@@ -52,8 +52,8 @@ export default function AboutPage() {
       <InfoSection heading="Get in touch">
         <p>
           For partnerships, press, or just to say hi:{" "}
-          <a href="mailto:hello@onelink.example" className="underline">
-            hello@onelink.example
+          <a href="mailto:hello@onelinkjm.com" className="underline">
+            hello@onelinkjm.com
           </a>
           . Customers — message us on WhatsApp from any page.
         </p>

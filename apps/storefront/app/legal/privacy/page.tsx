@@ -101,8 +101,8 @@ export default function PrivacyPage() {
           Under Jamaica&apos;s Data Protection Act you may request access to the personal data
           we hold about you, ask us to correct inaccuracies, request deletion (subject to legal
           retention obligations), or object to certain types of processing. Contact us at{" "}
-          <a href="mailto:privacy@onelink.example" className="underline">
-            privacy@onelink.example
+          <a href="mailto:privacy@onelinkjm.com" className="underline">
+            privacy@onelinkjm.com
           </a>{" "}
           and we will respond within 30 days.
         </p>
@@ -137,8 +137,8 @@ export default function PrivacyPage() {
       <Section heading="Contact">
         <p>
           Questions or requests about your data? Email{" "}
-          <a href="mailto:privacy@onelink.example" className="underline">
-            privacy@onelink.example
+          <a href="mailto:privacy@onelinkjm.com" className="underline">
+            privacy@onelinkjm.com
           </a>
           .
         </p>

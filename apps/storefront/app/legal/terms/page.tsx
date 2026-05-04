@@ -164,8 +164,8 @@ export default function TermsPage() {
         <p>
           Questions about these Terms? Reach us via the WhatsApp link in the site footer or
           email{" "}
-          <a href="mailto:hello@onelink.example" className="underline">
-            hello@onelink.example
+          <a href="mailto:hello@onelinkjm.com" className="underline">
+            hello@onelinkjm.com
           </a>
           .
         </p>

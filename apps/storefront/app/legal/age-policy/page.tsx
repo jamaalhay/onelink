@@ -75,8 +75,8 @@ export default function AgePolicyPage() {
         <p>
           If you believe a minor has used or attempted to use Onelink, or that someone is
           buying age-restricted products for a minor, please contact us via WhatsApp or email{" "}
-          <a href="mailto:hello@onelink.example" className="underline">
-            hello@onelink.example
+          <a href="mailto:hello@onelinkjm.com" className="underline">
+            hello@onelinkjm.com
           </a>
           . We take reports seriously and will investigate.
         </p>
