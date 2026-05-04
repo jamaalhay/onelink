@@ -14,6 +14,23 @@ const cartCookieOptions = {
   path: "/",
 };
 
+// Fields the storefront client needs for the cart drawer + count badge.
+const CART_FIELDS = [
+  "id",
+  "currency_code",
+  "subtotal",
+  "shipping_total",
+  "total",
+  "*items",
+  "items.product_handle",
+  "items.product_title",
+  "items.variant_title",
+  "items.thumbnail",
+  "items.unit_price",
+  "items.quantity",
+  "items.total",
+].join(",");
+
 async function getCartId(): Promise<string | undefined> {
   const c = await cookies();
   return c.get(CART_COOKIE)?.value;
@@ -35,6 +52,39 @@ async function ensureCart(): Promise<string> {
   return cart.id;
 }
 
+// GET — current cart for the SWR client hook. Returns `{ cart: null }` when
+// the visitor has no cart cookie (no Medusa round trip needed).
+export async function GET() {
+  try {
+    const cartId = await getCartId();
+    if (!cartId) return NextResponse.json({ cart: null });
+    const { cart } = await sdk.store.cart.retrieve(cartId, { fields: CART_FIELDS });
+    if (!cart || cart.completed_at) {
+      const res = NextResponse.json({ cart: null });
+      res.cookies.delete(CART_COOKIE);
+      return res;
+    }
+    return NextResponse.json({ cart });
+  } catch {
+    return NextResponse.json({ cart: null });
+  }
+}
+
+// PUT — warmup. Creates the cart cookie ahead of the first add-to-cart so
+// the click handler doesn't pay the cart-creation tax. Idempotent: if a
+// cart already exists, returns it.
+export async function PUT() {
+  try {
+    const cartId = await ensureCart();
+    const res = NextResponse.json({ ok: true, cartId });
+    res.cookies.set(CART_COOKIE, cartId, cartCookieOptions);
+    return res;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ ok: false, error: msg }, { status: 500 });
+  }
+}
+
 interface AddPayload {
   variant_id: string;
   quantity?: number;
@@ -51,7 +101,10 @@ export async function POST(req: Request) {
       variant_id: body.variant_id,
       quantity: body.quantity ?? 1,
     });
-    const res = NextResponse.json({ ok: true, cartId });
+    // Re-fetch so the client gets the fresh cart in the same round-trip and
+    // can pre-populate its SWR cache without a follow-up GET.
+    const { cart } = await sdk.store.cart.retrieve(cartId, { fields: CART_FIELDS });
+    const res = NextResponse.json({ ok: true, cart });
     res.cookies.set(CART_COOKIE, cartId, cartCookieOptions);
     return res;
   } catch (err) {
@@ -78,7 +131,8 @@ export async function PATCH(req: Request) {
     } else {
       await sdk.store.cart.updateLineItem(cartId, body.line_item_id, { quantity: body.quantity });
     }
-    return NextResponse.json({ ok: true });
+    const { cart } = await sdk.store.cart.retrieve(cartId, { fields: CART_FIELDS });
+    return NextResponse.json({ ok: true, cart });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ ok: false, error: msg }, { status: 500 });
@@ -97,7 +151,8 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "No cart" }, { status: 400 });
     }
     await sdk.store.cart.deleteLineItem(cartId, lineItemId);
-    return NextResponse.json({ ok: true });
+    const { cart } = await sdk.store.cart.retrieve(cartId, { fields: CART_FIELDS });
+    return NextResponse.json({ ok: true, cart });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ ok: false, error: msg }, { status: 500 });

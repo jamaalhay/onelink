@@ -1,11 +1,11 @@
 "use client";
 
 import { useTransition } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Trash } from "@phosphor-icons/react/dist/ssr";
 import { formatJmd } from "@/lib/format";
+import { useCart, type ClientCart } from "@/lib/cart/use-cart";
 
 interface CartLineItemProps {
   id: string;
@@ -31,7 +31,7 @@ export function CartLineItem({
   total,
   size = "page",
 }: CartLineItemProps) {
-  const router = useRouter();
+  const { replaceCart } = useCart();
   const [pending, startTransition] = useTransition();
 
   const onChangeQty = (delta: number) => {
@@ -42,11 +42,15 @@ export function CartLineItem({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ line_item_id: id, quantity: quantity + delta }),
         });
-        if (!res.ok) console.error("[cart] updateLineItem failed:", res.status);
+        const data = (await res.json().catch(() => ({}))) as { ok?: boolean; cart?: ClientCart };
+        if (!res.ok) {
+          console.error("[cart] updateLineItem failed:", res.status);
+          return;
+        }
+        replaceCart(data.cart ?? null);
       } catch (err) {
         console.error("[cart] updateLineItem", err);
       }
-      router.refresh();
     });
   };
 
@@ -56,11 +60,15 @@ export function CartLineItem({
         const res = await fetch(`/api/cart?line_item_id=${encodeURIComponent(id)}`, {
           method: "DELETE",
         });
-        if (!res.ok) console.error("[cart] removeLineItem failed:", res.status);
+        const data = (await res.json().catch(() => ({}))) as { ok?: boolean; cart?: ClientCart };
+        if (!res.ok) {
+          console.error("[cart] removeLineItem failed:", res.status);
+          return;
+        }
+        replaceCart(data.cart ?? null);
       } catch (err) {
         console.error("[cart] removeLineItem", err);
       }
-      router.refresh();
     });
   };
 

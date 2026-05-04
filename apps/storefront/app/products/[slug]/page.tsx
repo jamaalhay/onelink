@@ -25,7 +25,10 @@ interface PdpProps {
   params: Promise<{ slug: string }>;
 }
 
-export const dynamic = "force-dynamic";
+// 60s ISR — products and reviews don't change minute-to-minute, and any
+// cart-aware UI lives in the client-side header / drawer, so a cached
+// HTML response is safe.
+export const revalidate = 60;
 
 export async function generateMetadata({ params }: PdpProps) {
   const { slug } = await params;

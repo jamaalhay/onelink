@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ShoppingBag, Minus, Plus, Check } from "@phosphor-icons/react/dist/ssr";
 import type { Product } from "@/lib/types";
 import { trackAddToCart } from "@/lib/analytics";
+import { useCart, type ClientCart } from "@/lib/cart/use-cart";
 
 interface AddToCartButtonsProps {
   product: Product;
@@ -12,6 +13,7 @@ interface AddToCartButtonsProps {
 
 export function AddToCartButtons({ product }: AddToCartButtonsProps) {
   const router = useRouter();
+  const { replaceCart } = useCart();
   const [pending, startTransition] = useTransition();
   const [qty, setQty] = useState(1);
   const [selectedVariant, setSelectedVariant] = useState(
@@ -31,10 +33,17 @@ export function AddToCartButtons({ product }: AddToCartButtonsProps) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ variant_id: variantId, quantity: qty }),
         });
-        const data = await res.json().catch(() => ({}));
+        const data = (await res.json().catch(() => ({}))) as {
+          ok?: boolean;
+          cart?: ClientCart;
+        };
         if (!res.ok || !data.ok) {
           console.error("[add-to-cart] failed:", res.status, data);
         } else {
+          // Hydrate the SWR cart cache from the response so the drawer +
+          // count badge update without a follow-up GET. Removes the need to
+          // re-render the entire PDP via router.refresh().
+          replaceCart(data.cart ?? null);
           trackAddToCart({
             variantId: variantId,
             productTitle: product.title,
@@ -51,7 +60,6 @@ export function AddToCartButtons({ product }: AddToCartButtonsProps) {
       } else {
         setJustAdded(true);
         setTimeout(() => setJustAdded(false), 2000);
-        router.refresh();
       }
     });
   };

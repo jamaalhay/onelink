@@ -6,9 +6,23 @@
  * (ProductCard, CategoryCard, etc.) work without modification.
  */
 import "server-only";
+import { unstable_cache } from "next/cache";
 import { sdk } from "./client";
 import { adaptCategory, adaptProduct } from "./adapters";
 import type { Category, Product } from "@/lib/types";
+
+// Wraps a server fetcher in Next's data cache so the underlying Medusa SDK
+// calls (which default to no-store in Next 15+) are cached for 60s and shared
+// across all requests for the same key. The cache is tag-keyed so a future
+// admin webhook can invalidate ("products") or ("categories") on demand.
+function cacheRead<TArgs extends unknown[], TResult>(
+  fn: (...args: TArgs) => Promise<TResult>,
+  keyParts: string[],
+  tags: string[],
+  revalidate = 60
+) {
+  return unstable_cache(fn, keyParts, { revalidate, tags });
+}
 
 const PRODUCT_FIELDS = [
   "id",
@@ -49,67 +63,79 @@ async function getJamaicaRegionId(): Promise<string | null> {
   }
 }
 
-export async function fetchCategories(): Promise<Category[]> {
-  try {
-    const { product_categories } = await sdk.store.category.list({
-      fields: "id,handle,name,description",
-      limit: 100,
-    });
-    return product_categories
-      .map((c) => adaptCategory(c))
-      .filter((c): c is Category => c !== null);
-  } catch (err) {
-    console.error("[medusa.fetchCategories]", err);
-    return [];
-  }
-}
-
-export async function fetchProducts(opts?: {
-  category?: string;
-  q?: string;
-  limit?: number;
-  offset?: number;
-}): Promise<{ products: Product[]; total: number }> {
-  try {
-    const regionId = await getJamaicaRegionId();
-    const params: Record<string, unknown> = {
-      limit: opts?.limit ?? 100,
-      offset: opts?.offset ?? 0,
-      fields: PRODUCT_FIELDS,
-    };
-    if (regionId) params.region_id = regionId;
-    if (opts?.q) params.q = opts.q;
-    if (opts?.category) {
-      const catId = await categoryIdByHandle(opts.category);
-      // If category lookup fails for a known category slug, return empty rather
-      // than dropping the filter and showing the entire catalog.
-      if (!catId) return { products: [], total: 0 };
-      params.category_id = catId;
+export const fetchCategories = cacheRead(
+  async (): Promise<Category[]> => {
+    try {
+      const { product_categories } = await sdk.store.category.list({
+        fields: "id,handle,name,description",
+        limit: 100,
+      });
+      return product_categories
+        .map((c) => adaptCategory(c))
+        .filter((c): c is Category => c !== null);
+    } catch (err) {
+      console.error("[medusa.fetchCategories]", err);
+      return [];
     }
-    const { products, count } = await sdk.store.product.list(params);
-    return { products: products.map((p) => adaptProduct(p)), total: count ?? products.length };
-  } catch (err) {
-    console.error("[medusa.fetchProducts]", err);
-    return { products: [], total: 0 };
-  }
-}
+  },
+  ["fetchCategories"],
+  ["categories"]
+);
 
-export async function fetchProductByHandle(handle: string): Promise<Product | null> {
-  try {
-    const regionId = await getJamaicaRegionId();
-    const params: Record<string, unknown> = {
-      handle,
-      fields: PRODUCT_FIELDS,
-      limit: 1,
-    };
-    if (regionId) params.region_id = regionId;
-    const { products } = await sdk.store.product.list(params);
-    return products[0] ? adaptProduct(products[0]) : null;
-  } catch (err) {
-    console.error("[medusa.fetchProductByHandle]", err);
-    return null;
-  }
-}
+export const fetchProducts = cacheRead(
+  async (opts?: {
+    category?: string;
+    q?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<{ products: Product[]; total: number }> => {
+    try {
+      const regionId = await getJamaicaRegionId();
+      const params: Record<string, unknown> = {
+        limit: opts?.limit ?? 100,
+        offset: opts?.offset ?? 0,
+        fields: PRODUCT_FIELDS,
+      };
+      if (regionId) params.region_id = regionId;
+      if (opts?.q) params.q = opts.q;
+      if (opts?.category) {
+        const catId = await categoryIdByHandle(opts.category);
+        // If category lookup fails for a known category slug, return empty rather
+        // than dropping the filter and showing the entire catalog.
+        if (!catId) return { products: [], total: 0 };
+        params.category_id = catId;
+      }
+      const { products, count } = await sdk.store.product.list(params);
+      return { products: products.map((p) => adaptProduct(p)), total: count ?? products.length };
+    } catch (err) {
+      console.error("[medusa.fetchProducts]", err);
+      return { products: [], total: 0 };
+    }
+  },
+  ["fetchProducts"],
+  ["products"]
+);
+
+export const fetchProductByHandle = cacheRead(
+  async (handle: string): Promise<Product | null> => {
+    try {
+      const regionId = await getJamaicaRegionId();
+      const params: Record<string, unknown> = {
+        handle,
+        fields: PRODUCT_FIELDS,
+        limit: 1,
+      };
+      if (regionId) params.region_id = regionId;
+      const { products } = await sdk.store.product.list(params);
+      return products[0] ? adaptProduct(products[0]) : null;
+    } catch (err) {
+      console.error("[medusa.fetchProductByHandle]", err);
+      return null;
+    }
+  },
+  ["fetchProductByHandle"],
+  ["products"]
+);
 
 export async function fetchRelatedProducts(
   handle: string,
@@ -142,19 +168,23 @@ async function categoryIdByHandle(handle: string): Promise<string | undefined> {
   }
 }
 
-export async function fetchCategoryByHandle(handle: string): Promise<Category | null> {
-  try {
-    const { product_categories } = await sdk.store.category.list({
-      handle,
-      fields: "id,handle,name,description",
-      limit: 1,
-    });
-    return product_categories[0] ? adaptCategory(product_categories[0]) : null;
-  } catch (err) {
-    console.error("[medusa.fetchCategoryByHandle]", err);
-    return null;
-  }
-}
+export const fetchCategoryByHandle = cacheRead(
+  async (handle: string): Promise<Category | null> => {
+    try {
+      const { product_categories } = await sdk.store.category.list({
+        handle,
+        fields: "id,handle,name,description",
+        limit: 1,
+      });
+      return product_categories[0] ? adaptCategory(product_categories[0]) : null;
+    } catch (err) {
+      console.error("[medusa.fetchCategoryByHandle]", err);
+      return null;
+    }
+  },
+  ["fetchCategoryByHandle"],
+  ["categories"]
+);
 
 export async function getRegionId(): Promise<string | null> {
   return getJamaicaRegionId();

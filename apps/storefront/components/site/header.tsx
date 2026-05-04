@@ -3,7 +3,6 @@ import Image from "next/image";
 import { User, List } from "@phosphor-icons/react/dist/ssr";
 import { SearchDialog } from "@/components/site/search-dialog";
 import { CartDrawer } from "@/components/site/cart-drawer";
-import { getCart } from "@/lib/medusa/cart";
 
 const navLinks = [
   { href: "/shop", label: "Shop" },
@@ -13,8 +12,10 @@ const navLinks = [
   { href: "/about", label: "About" },
 ];
 
-export async function Header() {
-  const cart = await getCart();
+// Header stays a Server Component but no longer fetches the cart — the
+// CartDrawer is a Client Component that pulls cart state via SWR. This
+// removes a Medusa round-trip from every layout render.
+export function Header() {
   return (
     <header className="sticky top-0 z-40 bg-[var(--color-bg)] border-b border-[var(--color-border)]">
       <div className="mx-auto max-w-[1400px] px-4 lg:px-10 h-[72px] flex items-center justify-between gap-6">
@@ -61,7 +62,7 @@ export async function Header() {
           >
             <User size={20} />
           </Link>
-          <CartDrawer cart={cart} />
+          <CartDrawer />
         </div>
       </div>
     </header>

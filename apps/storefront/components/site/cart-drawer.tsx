@@ -12,34 +12,16 @@ import {
 } from "@/components/ui/sheet";
 import { formatJmd } from "@/lib/format";
 import { CartLineItem } from "@/components/site/cart-line-item";
-
-export interface CartDrawerLineItem {
-  id: string;
-  product_handle?: string | null;
-  product_title?: string | null;
-  variant_title?: string | null;
-  thumbnail?: string | null;
-  unit_price?: number | null;
-  quantity?: number | null;
-  total?: number | null;
-}
-
-export interface CartDrawerProps {
-  cart: {
-    items?: CartDrawerLineItem[] | null;
-    subtotal?: number | null;
-    shipping_total?: number | null;
-    total?: number | null;
-  } | null;
-}
+import { useCart } from "@/lib/cart/use-cart";
 
 /**
  * Header cart icon — opens a slide-out mini-cart drawer.
- * DESIGN.md / PRD §6 spec image 6 panel A.
+ * Reads cart state via SWR so navigation back to a page doesn't trigger
+ * a fresh server-side cart fetch in the layout.
  */
-export function CartDrawer({ cart }: CartDrawerProps) {
+export function CartDrawer() {
+  const { cart, itemCount } = useCart();
   const items = cart?.items ?? [];
-  const itemCount = items.reduce((n, it) => n + (it.quantity ?? 0), 0);
   const subtotal = cart?.subtotal ?? 0;
   const shipping = cart?.shipping_total ?? 0;
   const total = cart?.total ?? subtotal;

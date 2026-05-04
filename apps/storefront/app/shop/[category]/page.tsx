@@ -11,7 +11,8 @@ interface CategoryPageProps {
   params: Promise<{ category: string }>;
 }
 
-export const dynamic = "force-dynamic";
+// 60s ISR — category listings don't change minute-to-minute.
+export const revalidate = 60;
 
 export async function generateMetadata({ params }: CategoryPageProps) {
   const { category: slug } = await params;
