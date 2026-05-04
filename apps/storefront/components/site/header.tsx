@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { MagnifyingGlass, User, List } from "@phosphor-icons/react/dist/ssr";
+import { User, List } from "@phosphor-icons/react/dist/ssr";
+import { SearchDialog } from "@/components/site/search-dialog";
 import { CartDrawer } from "@/components/site/cart-drawer";
 import { getCart } from "@/lib/medusa/cart";
 
@@ -52,13 +53,7 @@ export async function Header() {
 
         {/* Right side */}
         <div className="flex items-center gap-1 text-[var(--color-text)]">
-          <Link
-            href="/shop"
-            className="p-2.5 hover:bg-[var(--color-surface)] rounded-md transition-colors"
-            aria-label="Search"
-          >
-            <MagnifyingGlass size={20} />
-          </Link>
+          <SearchDialog />
           <Link
             href="/account"
             className="hidden sm:flex p-2.5 hover:bg-[var(--color-surface)] rounded-md transition-colors"
