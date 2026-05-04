@@ -188,6 +188,48 @@ const NewProductWizardPage = () => {
       if (!res.ok) {
         throw new Error(data?.message ?? `HTTP ${res.status}`);
       }
+
+      // Apply the stock count: products created via /admin/products have a
+      // variant with `manage_inventory: true` but no inventory level until
+      // we attach one. Without this step the storefront shows the product
+      // as Out of Stock and hides the Add to Cart button.
+      try {
+        const variant = data.product?.variants?.[0];
+        const variantId: string | undefined = variant?.id;
+        if (variantId && stockNumber > 0) {
+          // Look up the inventory_item linked to this variant.
+          const ivRes = await fetch(
+            `/admin/inventory-items?fields=id&sku=${encodeURIComponent(sku)}&limit=1`,
+            { credentials: "include" }
+          );
+          const ivData = await ivRes.json();
+          const inventoryItemId: string | undefined = ivData?.inventory_items?.[0]?.id;
+          // Pick the first stock location.
+          const slRes = await fetch("/admin/stock-locations?fields=id&limit=1", {
+            credentials: "include",
+          });
+          const slData = await slRes.json();
+          const stockLocationId: string | undefined = slData?.stock_locations?.[0]?.id;
+          if (inventoryItemId && stockLocationId) {
+            await fetch(`/admin/inventory-items/${inventoryItemId}/location-levels`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({
+                location_id: stockLocationId,
+                stocked_quantity: stockNumber,
+              }),
+            });
+          }
+        }
+      } catch (invErr) {
+        // Non-fatal — surface a toast so ops knows to set inventory manually.
+        console.warn("[wizard] could not auto-set inventory:", invErr);
+        toast.warning(
+          "Product created, but inventory wasn't set. Set stock manually on the Inventory tab."
+        );
+      }
+
       toast.success(`Product "${data.product.title}" created`);
       // Reset for the next product.
       setValues(emptyFormValues);
