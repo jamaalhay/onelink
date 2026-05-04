@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Star, Truck, ShieldCheck, Lock, Package, ShoppingBag } from "@phosphor-icons/react/dist/ssr";
 import { fetchProductByHandle, fetchRelatedProducts, fetchCategoryByHandle } from "@/lib/medusa/server";
+import { fetchReviews } from "@/lib/medusa/reviews";
 import { defaultZone } from "@/lib/mock/zones";
 import { formatJmd, formatRating, formatEtaRange } from "@/lib/format";
 import { AddToCartButtons } from "@/components/site/add-to-cart-buttons";
@@ -38,9 +39,10 @@ export default async function ProductDetailPage({ params }: PdpProps) {
   const product = await fetchProductByHandle(slug);
   if (!product) notFound();
 
-  const [category, related] = await Promise.all([
+  const [category, related, reviews] = await Promise.all([
     fetchCategoryByHandle(product.category),
     fetchRelatedProducts(slug, 4),
+    fetchReviews(slug),
   ]);
   const galleryImages = product.galleryUrls?.length
     ? [product.imageUrl, ...product.galleryUrls]
@@ -82,12 +84,20 @@ export default async function ProductDetailPage({ params }: PdpProps) {
             <p className="text-sm text-[var(--color-text-muted)]">{product.brand}</p>
             <h1 className="text-3xl lg:text-4xl font-semibold tracking-tight mt-1">{product.title}</h1>
             <div className="flex items-center gap-3 mt-3 text-sm">
-              <span className="inline-flex items-center gap-1 text-[var(--color-text-muted)]">
-                <Star size={14} weight="fill" className="text-[var(--color-warning)]" />
-                {formatRating(product.rating)}
-              </span>
-              <span className="text-[var(--color-text-dim)]">·</span>
-              <span className="text-[var(--color-text-muted)]">{product.reviewCount} reviews</span>
+              {reviews.summary.count > 0 ? (
+                <>
+                  <span className="inline-flex items-center gap-1 text-[var(--color-text-muted)]">
+                    <Star size={14} weight="fill" className="text-[var(--color-warning)]" />
+                    {formatRating(reviews.summary.average)}
+                  </span>
+                  <span className="text-[var(--color-text-dim)]">·</span>
+                  <span className="text-[var(--color-text-muted)]">
+                    {reviews.summary.count} review{reviews.summary.count === 1 ? "" : "s"}
+                  </span>
+                </>
+              ) : (
+                <span className="text-[var(--color-text-muted)]">No reviews yet</span>
+              )}
               {product.badges[0] && (
                 <>
                   <span className="text-[var(--color-text-dim)]">·</span>
@@ -178,7 +188,7 @@ export default async function ProductDetailPage({ params }: PdpProps) {
 
       {/* Reviews */}
       <section className="mx-auto max-w-[1400px] px-4 lg:px-10 pb-12">
-        <ReviewSummary product={product} />
+        <ReviewSummary product={product} data={reviews} />
       </section>
 
       {/* Related products */}

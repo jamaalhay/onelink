@@ -45,6 +45,9 @@ module.exports = defineConfig({
   },
   modules: [
     {
+      resolve: "./src/modules/product-review",
+    },
+    {
       resolve: "@medusajs/medusa/payment",
       options: {
         providers: [
