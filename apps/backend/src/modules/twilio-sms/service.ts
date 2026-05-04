@@ -9,6 +9,10 @@ interface TwilioOptions {
   accountSid: string;
   authToken: string;
   fromNumber: string;
+  /** Optional WhatsApp-enabled sender (e.g. `whatsapp:+14155238886` for the
+   * Twilio sandbox, or your approved WA Business sender). Required only if
+   * the storefront sends notifications with channel = "whatsapp". */
+  whatsappFromNumber?: string;
 }
 
 interface InjectedDependencies {
@@ -71,11 +75,26 @@ export default class TwilioSmsNotificationService extends AbstractNotificationPr
       );
     }
 
+    // Twilio uses the same Messages endpoint for SMS and WhatsApp; the channel
+    // is encoded by prefixing From / To with `whatsapp:`. We let the
+    // notification.channel decide; if it's "whatsapp" but we don't have a
+    // WA-enabled sender configured, fall back to SMS so the customer still
+    // gets the update.
+    const wantsWhatsApp = notification.channel === "whatsapp";
+    const useWhatsApp = wantsWhatsApp && Boolean(this.options_.whatsappFromNumber);
+    if (wantsWhatsApp && !useWhatsApp) {
+      this.logger_.warn(
+        `[twilio-sms] WhatsApp requested but TWILIO_WHATSAPP_FROM not configured — sending as SMS instead`
+      );
+    }
+    const fromAddr = useWhatsApp ? this.options_.whatsappFromNumber! : this.options_.fromNumber;
+    const toAddr = useWhatsApp ? `whatsapp:${to.replace(/^whatsapp:/, "")}` : to;
+
     const url = `https://api.twilio.com/2010-04-01/Accounts/${this.options_.accountSid}/Messages.json`;
     const auth = Buffer.from(`${this.options_.accountSid}:${this.options_.authToken}`).toString("base64");
     const params = new URLSearchParams({
-      From: this.options_.fromNumber,
-      To: to,
+      From: fromAddr,
+      To: toAddr,
       Body: body,
     });
 
@@ -98,7 +117,7 @@ export default class TwilioSmsNotificationService extends AbstractNotificationPr
     }
 
     const data = (await res.json()) as { sid?: string };
-    this.logger_.info(`[twilio-sms] sent to ${to}, sid=${data.sid}`);
+    this.logger_.info(`[twilio-sms] sent ${useWhatsApp ? "WA" : "SMS"} to ${to}, sid=${data.sid}`);
     return { id: data.sid ?? "twilio-no-sid" };
   }
 }

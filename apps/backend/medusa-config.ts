@@ -66,6 +66,9 @@ module.exports = defineConfig({
         process.env.TWILIO_AUTH_TOKEN &&
         process.env.TWILIO_FROM_NUMBER
       ) {
+        // Same provider class handles SMS and WhatsApp — Twilio's API only
+        // differs by `From: whatsapp:` prefix. WA channel is registered too;
+        // the provider falls back to SMS if TWILIO_WHATSAPP_FROM isn't set.
         providers.push({
           resolve: "./src/modules/twilio-sms",
           id: "twilio-sms",
@@ -73,10 +76,11 @@ module.exports = defineConfig({
             accountSid: process.env.TWILIO_ACCOUNT_SID,
             authToken: process.env.TWILIO_AUTH_TOKEN,
             fromNumber: process.env.TWILIO_FROM_NUMBER,
+            whatsappFromNumber: process.env.TWILIO_WHATSAPP_FROM,
             // Channels go inside provider.options.channels (not top-level —
             // counterintuitive but it's how @medusajs/notification's loader
             // reads them).
-            channels: ["sms"],
+            channels: ["sms", "whatsapp"],
           },
         });
       }

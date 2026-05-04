@@ -118,6 +118,7 @@ function CheckoutFormInner({
   );
 
   const [paymentMethod, setPaymentMethod] = useState<"card" | "cod">("card");
+  const [notifyViaWhatsApp, setNotifyViaWhatsApp] = useState(false);
 
   const selectPaymentMethod = (m: "card" | "cod") => {
     if (m === paymentMethod) return;
@@ -171,6 +172,7 @@ function CheckoutFormInner({
               customer,
               address,
               shipping_option_id: shippingOptionId,
+              notify_via_whatsapp: notifyViaWhatsApp,
             }),
           });
           const initData = await initRes.json().catch(() => ({}));
@@ -202,6 +204,7 @@ function CheckoutFormInner({
               address,
               shipping_option_id: shippingOptionId,
               payment_method: "card",
+              notify_via_whatsapp: notifyViaWhatsApp,
             }),
           });
           const completeData = await completeRes.json().catch(() => ({}));
@@ -231,6 +234,7 @@ function CheckoutFormInner({
             address,
             shipping_option_id: shippingOptionId,
             payment_method: paymentMethod,
+            notify_via_whatsapp: notifyViaWhatsApp,
           }),
         });
         const data = await res.json().catch(() => ({}));
@@ -322,6 +326,26 @@ function CheckoutFormInner({
             <PaymentElement options={{ layout: "tabs" }} />
           </div>
         )}
+      </FormBlock>
+
+      <FormBlock title="Order Updates">
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={notifyViaWhatsApp}
+            onChange={(e) => setNotifyViaWhatsApp(e.target.checked)}
+            className="mt-1 w-4 h-4 rounded border-[var(--color-border-strong)] text-[var(--color-accent)] focus:ring-[var(--color-accent)] focus:ring-offset-2"
+          />
+          <span>
+            <span className="text-sm font-medium text-[var(--color-text)] block">
+              Send updates via WhatsApp
+            </span>
+            <span className="text-xs text-[var(--color-text-muted)] mt-0.5 block">
+              Order confirmation and delivery progress straight to your WhatsApp.
+              We&apos;ll fall back to SMS if your number isn&apos;t on WhatsApp.
+            </span>
+          </span>
+        </label>
       </FormBlock>
 
       {error && (

@@ -10,6 +10,7 @@ interface PlacePayload {
   address: { street: string; landmark?: string };
   shipping_option_id: string;
   payment_method?: "card" | "cod";
+  notify_via_whatsapp?: boolean;
 }
 
 async function getCartId(): Promise<string | undefined> {
@@ -71,6 +72,9 @@ export async function POST(req: Request) {
           country_code: "jm",
           province: "Kingston",
           postal_code: "00000",
+        },
+        metadata: {
+          notify_via_whatsapp: body.notify_via_whatsapp === true,
         },
       });
 

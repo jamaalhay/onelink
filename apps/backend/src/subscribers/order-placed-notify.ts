@@ -1,5 +1,5 @@
 import { SubscriberArgs, SubscriberConfig } from "@medusajs/framework";
-import { Modules } from "@medusajs/framework/utils";
+import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils";
 
 const STOREFRONT_URL =
   process.env.STOREFRONT_URL ?? "https://storefront-dun-three.vercel.app";
@@ -26,6 +26,7 @@ interface OrderForNotify {
   email?: string | null;
   shipping_address?: { phone?: string | null; address_1?: string | null; city?: string | null } | null;
   items?: { product_title?: string | null; variant_title?: string | null; quantity?: number | null; unit_price?: number | null; total?: number | null }[] | null;
+  metadata?: Record<string, unknown> | null;
 }
 
 function fmtAmt(amount: number | null | undefined, currency: string): string {
@@ -107,6 +108,20 @@ export default async function orderPlacedNotify({
     order = await orderModule.retrieveOrder(orderId, {
       relations: ["shipping_address", "items"],
     });
+    // retrieveOrder may not return `metadata` depending on Medusa version, so
+    // fetch it explicitly via Query for the WA opt-in branch.
+    if (!order.metadata) {
+      const query = container.resolve(ContainerRegistrationKeys.QUERY) as {
+        graph(args: { entity: string; fields: string[]; filters: Record<string, unknown> }): Promise<{ data: Array<{ metadata?: Record<string, unknown> }> }>;
+      };
+      const { data } = await query.graph({
+        entity: "order",
+        fields: ["id", "metadata"],
+        filters: { id: orderId },
+      });
+      const meta = data?.[0]?.metadata;
+      if (meta) order.metadata = meta;
+    }
   } catch (err) {
     logger.warn(`[order.placed] could not retrieve order ${orderId}: ${(err as Error).message}`);
     return;
@@ -131,8 +146,12 @@ export default async function orderPlacedNotify({
     }): Promise<unknown>;
   };
 
-  // SMS — always when phone present
+  // SMS / WhatsApp — always when phone present. Channel chosen by
+  // order.metadata.notify_via_whatsapp (set at checkout). Provider falls
+  // back to SMS internally if no WA sender is configured.
   const phone = order.shipping_address?.phone?.trim();
+  const wantsWhatsApp = order.metadata?.notify_via_whatsapp === true;
+  const phoneChannel = wantsWhatsApp ? "whatsapp" : "sms";
   if (phone) {
     const smsBody = cod
       ? `Onelink: Order ${orderNumber} confirmed (${itemCount} item${itemCount === 1 ? "" : "s"}, ${fmtAmt(order.total, currency)} on delivery). Track: ${trackUrl}`
@@ -140,19 +159,19 @@ export default async function orderPlacedNotify({
     try {
       await notificationModule.createNotifications({
         to: phone,
-        channel: "sms",
+        channel: phoneChannel,
         template: "order-placed",
         content: { text: smsBody },
         trigger_type: "order.placed",
         resource_id: orderId,
         resource_type: "order",
       });
-      logger.info(`[order.placed] SMS queued to ${phone} for ${orderNumber}`);
+      logger.info(`[order.placed] ${phoneChannel.toUpperCase()} queued to ${phone} for ${orderNumber}`);
     } catch (err) {
-      logger.error(`[order.placed] SMS dispatch failed for ${orderNumber}: ${(err as Error).message}`);
+      logger.error(`[order.placed] ${phoneChannel} dispatch failed for ${orderNumber}: ${(err as Error).message}`);
     }
   } else {
-    logger.info(`[order.placed] order ${orderId} has no phone — skipping SMS`);
+    logger.info(`[order.placed] order ${orderId} has no phone — skipping notification`);
   }
 
   // Email — only when the customer gave a real email (not the synthetic

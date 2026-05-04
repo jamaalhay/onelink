@@ -26,8 +26,9 @@ export default async function TrackPage({ params }: PageProps) {
   const stage = deriveOrderStage(order);
   const zoneName = order.shipping_methods?.[0]?.name ?? "Kingston";
 
-  // Mock rider info — replaced when the dispatch system is wired up in #9.
-  const mockRider = { name: "Andre M.", rating: 4.9, vehicle: "Bike · 142" };
+  // Real rider info comes from order.metadata.rider once the dispatch system
+  // writes it. Until then we render the "awaiting dispatch" placeholder.
+  const rider = (order.metadata as { rider?: { name?: string; rating?: number; vehicle?: string; phone?: string } } | null)?.rider ?? null;
 
   return (
     <>
@@ -57,39 +58,58 @@ export default async function TrackPage({ params }: PageProps) {
             <p className="text-sm text-[var(--color-text-muted)]">Rider location · live map</p>
           </div>
 
-          {/* Rider card */}
-          <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] p-6 flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-[var(--color-accent)]/10 flex items-center justify-center text-[var(--color-accent)] shrink-0">
-              <Motorcycle size={26} weight="duotone" />
+          {rider ? (
+            <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] p-6 flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-[var(--color-accent)]/10 flex items-center justify-center text-[var(--color-accent)] shrink-0">
+                <Motorcycle size={26} weight="duotone" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-base font-medium text-[var(--color-text)]">{rider.name ?? "Rider assigned"}</p>
+                <p className="text-sm text-[var(--color-text-muted)] flex items-center gap-2">
+                  {typeof rider.rating === "number" && (
+                    <>
+                      <span className="inline-flex items-center gap-0.5">
+                        <Star size={13} weight="fill" className="text-[var(--color-warning)]" />
+                        {rider.rating.toFixed(1)}
+                      </span>
+                      {rider.vehicle && <span className="text-[var(--color-text-dim)]">·</span>}
+                    </>
+                  )}
+                  {rider.vehicle && <span>{rider.vehicle}</span>}
+                </p>
+              </div>
+              {rider.phone && (
+                <div className="flex gap-2">
+                  <a
+                    href={`tel:${rider.phone}`}
+                    className="w-10 h-10 inline-flex items-center justify-center rounded-full border border-[var(--color-border)] hover:bg-[var(--color-surface)]"
+                    aria-label="Call rider"
+                  >
+                    <Phone size={16} />
+                  </a>
+                  <a
+                    href={`sms:${rider.phone}`}
+                    className="w-10 h-10 inline-flex items-center justify-center rounded-full border border-[var(--color-border)] hover:bg-[var(--color-surface)]"
+                    aria-label="Message rider"
+                  >
+                    <ChatCircleText size={16} />
+                  </a>
+                </div>
+              )}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-base font-medium text-[var(--color-text)]">{mockRider.name}</p>
-              <p className="text-sm text-[var(--color-text-muted)] flex items-center gap-2">
-                <span className="inline-flex items-center gap-0.5">
-                  <Star size={13} weight="fill" className="text-[var(--color-warning)]" />
-                  {mockRider.rating}
-                </span>
-                <span className="text-[var(--color-text-dim)]">·</span>
-                <span>{mockRider.vehicle}</span>
-              </p>
+          ) : (
+            <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] p-6 flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-[var(--color-bg-alt)] flex items-center justify-center text-[var(--color-text-muted)] shrink-0">
+                <Motorcycle size={26} weight="duotone" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-base font-medium text-[var(--color-text)]">Rider details on dispatch</p>
+                <p className="text-sm text-[var(--color-text-muted)] mt-0.5">
+                  We&apos;ll share name, photo, and contact once your order is on the way.
+                </p>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                className="w-10 h-10 inline-flex items-center justify-center rounded-full border border-[var(--color-border)] hover:bg-[var(--color-surface)]"
-                aria-label="Call rider"
-              >
-                <Phone size={16} />
-              </button>
-              <button
-                type="button"
-                className="w-10 h-10 inline-flex items-center justify-center rounded-full border border-[var(--color-border)] hover:bg-[var(--color-surface)]"
-                aria-label="Message rider"
-              >
-                <ChatCircleText size={16} />
-              </button>
-            </div>
-          </div>
+          )}
 
           <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] p-6">
             <p className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--color-text-muted)] mb-3">
