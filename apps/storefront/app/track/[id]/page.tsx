@@ -9,6 +9,8 @@ import { WhatsAppCta } from "@/components/site/whatsapp-cta";
 import { NeedHelp } from "@/components/site/need-help";
 import { ReorderEssentials } from "@/components/site/reorder-essentials";
 import { TrackPageView } from "@/components/site/track-page-view";
+import { TrackingMap } from "@/components/site/tracking-map";
+import { defaultZone, findZoneByName } from "@/lib/mock/zones";
 
 export const metadata = { title: "Track Order" };
 export const dynamic = "force-dynamic";
@@ -25,6 +27,7 @@ export default async function TrackPage({ params }: PageProps) {
   const orderNumber = `OL-${order.display_id ?? order.id.slice(-6).toUpperCase()}`;
   const stage = deriveOrderStage(order);
   const zoneName = order.shipping_methods?.[0]?.name ?? "Kingston";
+  const zone = findZoneByName(zoneName) ?? defaultZone;
 
   // Real rider info comes from order.metadata.rider once the dispatch system
   // writes it. Until then we render the "awaiting dispatch" placeholder.
@@ -53,10 +56,7 @@ export default async function TrackPage({ params }: PageProps) {
             <StatusTimeline current={stage} />
           </div>
 
-          {/* Map placeholder */}
-          <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] overflow-hidden bg-[var(--color-bg-alt)] aspect-[16/7] flex items-center justify-center">
-            <p className="text-sm text-[var(--color-text-muted)]">Rider location · live map</p>
-          </div>
+          <TrackingMap zone={zone} />
 
           {rider ? (
             <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] p-6 flex items-center gap-4">

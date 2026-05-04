@@ -52,6 +52,9 @@ export interface DeliveryZone {
   etaMin: number;
   etaMax: number;
   band: "core" | "outer";
+  /** Approximate centroid — used by the tracking-page map and ETA preview. */
+  lat?: number;
+  lng?: number;
 }
 
 export interface Testimonial {
