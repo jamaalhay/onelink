@@ -96,7 +96,7 @@ export function ReviewSummary({ product }: ReviewSummaryProps) {
             <Star key={i} size={14} weight="fill" />
           ))}
         </div>
-        <h4 className="text-base font-semibold mb-2">{HIGHLIGHT_REVIEW.title}</h4>
+        <h3 className="text-base font-semibold mb-2">{HIGHLIGHT_REVIEW.title}</h3>
         <blockquote className="text-base text-[var(--color-text)] leading-relaxed">
           &ldquo;{HIGHLIGHT_REVIEW.body}&rdquo;
         </blockquote>
