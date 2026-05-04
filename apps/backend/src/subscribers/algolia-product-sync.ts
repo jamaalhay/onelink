@@ -14,12 +14,19 @@ interface ProductGraphResult {
   variants: {
     inventory_quantity: number | null;
     manage_inventory: boolean | null;
-    calculated_price?: { calculated_amount?: number; currency_code?: string } | null;
+    prices: { amount: number | null; currency_code: string | null }[];
   }[];
 }
 
 function toDoc(p: ProductGraphResult): AlgoliaProductDoc {
-  const variant = p.variants?.[0];
+  let price: number | null = null;
+  for (const v of p.variants ?? []) {
+    for (const pr of v.prices ?? []) {
+      if (pr.currency_code === "jmd" && typeof pr.amount === "number") {
+        if (price === null || pr.amount < price) price = pr.amount;
+      }
+    }
+  }
   const inStock = (p.variants ?? []).some((v) => {
     if (v.manage_inventory === false) return true;
     return (v.inventory_quantity ?? 0) > 0;
@@ -33,8 +40,8 @@ function toDoc(p: ProductGraphResult): AlgoliaProductDoc {
     category_handles: (p.categories ?? []).map((c) => c.handle ?? "").filter(Boolean),
     category_names: (p.categories ?? []).map((c) => c.name ?? "").filter(Boolean),
     tags: (p.tags ?? []).map((t) => t.value).filter(Boolean),
-    price: variant?.calculated_price?.calculated_amount ?? null,
-    currency: variant?.calculated_price?.currency_code ?? "jmd",
+    price,
+    currency: "jmd",
     in_stock: inStock,
   };
 }
@@ -84,7 +91,8 @@ export default async function algoliaProductSync({
         "categories.name",
         "variants.inventory_quantity",
         "variants.manage_inventory",
-        "variants.calculated_price.*",
+        "variants.prices.amount",
+        "variants.prices.currency_code",
       ],
       filters: { id: productId },
     });

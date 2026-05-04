@@ -11,9 +11,15 @@ const INDEX = process.env.ALGOLIA_INDEX_NAME ?? "onelink_products";
 
 export const algoliaEnabled = Boolean(APP_ID && WRITE_KEY);
 
-function url(path: string): string {
-  return `https://${APP_ID}.algolia.net${path}`;
-}
+// Algolia routes writes to {appId}.algolia.net + three redundant hosts on
+// algolianet.com. Some networks (and Railway/Alpine resolvers) can't resolve
+// `algolia.net` reliably, so we always start from algolianet.com and retry
+// across the three redundant hosts on transport errors.
+const HOSTS = [
+  `${APP_ID}-1.algolianet.com`,
+  `${APP_ID}-2.algolianet.com`,
+  `${APP_ID}-3.algolianet.com`,
+];
 
 function headers() {
   return {
@@ -21,6 +27,27 @@ function headers() {
     "X-Algolia-API-Key": WRITE_KEY!,
     "Content-Type": "application/json",
   } as Record<string, string>;
+}
+
+async function fetchAlgolia(
+  path: string,
+  init: { method: string; body?: string }
+): Promise<Response> {
+  let lastErr: unknown;
+  for (const host of HOSTS) {
+    try {
+      const res = await fetch(`https://${host}${path}`, {
+        method: init.method,
+        headers: headers(),
+        body: init.body,
+      });
+      // 4xx/5xx from Algolia is a real response — return it; only retry on transport errors.
+      return res;
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  throw lastErr;
 }
 
 export interface AlgoliaProductDoc {
@@ -42,11 +69,10 @@ export async function upsertProducts(docs: AlgoliaProductDoc[]): Promise<void> {
   const body = JSON.stringify({
     requests: docs.map((d) => ({ action: "updateObject", body: d })),
   });
-  const res = await fetch(url(`/1/indexes/${encodeURIComponent(INDEX)}/batch`), {
-    method: "POST",
-    headers: headers(),
-    body,
-  });
+  const res = await fetchAlgolia(
+    `/1/indexes/${encodeURIComponent(INDEX)}/batch`,
+    { method: "POST", body }
+  );
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     throw new Error(`Algolia batch upsert failed: ${res.status} ${text.slice(0, 200)}`);
@@ -55,9 +81,9 @@ export async function upsertProducts(docs: AlgoliaProductDoc[]): Promise<void> {
 
 export async function deleteProduct(productId: string): Promise<void> {
   if (!algoliaEnabled) return;
-  const res = await fetch(
-    url(`/1/indexes/${encodeURIComponent(INDEX)}/${encodeURIComponent(productId)}`),
-    { method: "DELETE", headers: headers() }
+  const res = await fetchAlgolia(
+    `/1/indexes/${encodeURIComponent(INDEX)}/${encodeURIComponent(productId)}`,
+    { method: "DELETE" }
   );
   if (!res.ok && res.status !== 404) {
     const text = await res.text().catch(() => "");
@@ -82,11 +108,10 @@ export async function configureIndex(): Promise<void> {
     minWordSizefor2Typos: 7,
     hitsPerPage: 20,
   };
-  const res = await fetch(url(`/1/indexes/${encodeURIComponent(INDEX)}/settings`), {
-    method: "PUT",
-    headers: headers(),
-    body: JSON.stringify(settings),
-  });
+  const res = await fetchAlgolia(
+    `/1/indexes/${encodeURIComponent(INDEX)}/settings`,
+    { method: "PUT", body: JSON.stringify(settings) }
+  );
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     throw new Error(`Algolia settings failed: ${res.status} ${text.slice(0, 200)}`);
