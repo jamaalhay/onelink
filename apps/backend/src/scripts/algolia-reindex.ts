@@ -30,9 +30,14 @@ function toDoc(p: ProductGraphResult): AlgoliaProductDoc {
       }
     }
   }
-  const inStock = (p.variants ?? []).some((v) => {
+  // inventory_quantity needs sales-channel context via query.graph to resolve
+  // reliably; for the search index we default optimistic and let the live PDP
+  // show real stock at view time. If a variant explicitly opts out of
+  // inventory management OR has a positive count we know about, mark in stock.
+  const inStock = (p.variants ?? []).every((v) => {
     if (v.manage_inventory === false) return true;
-    return (v.inventory_quantity ?? 0) > 0;
+    if (typeof v.inventory_quantity === "number") return v.inventory_quantity > 0;
+    return true;
   });
   return {
     objectID: p.id,

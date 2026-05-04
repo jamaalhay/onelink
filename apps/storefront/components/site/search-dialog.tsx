@@ -194,11 +194,8 @@ function ResultsArea({ onSelect }: { onSelect: (handle: string) => void }) {
               <p className="text-sm font-medium">
                 {typeof h.price === "number" ? formatJmd(h.price) : "—"}
               </p>
-              {h.in_stock === false && (
-                <p className="text-[10px] text-[var(--color-text-dim)] uppercase tracking-wide">
-                  Out of stock
-                </p>
-              )}
+              {/* Stock badge omitted: query.graph doesn't always resolve
+                  variant inventory_quantity — the live PDP shows real stock. */}
             </div>
           </button>
         );

@@ -27,9 +27,12 @@ function toDoc(p: ProductGraphResult): AlgoliaProductDoc {
       }
     }
   }
-  const inStock = (p.variants ?? []).some((v) => {
+  // See note in algolia-reindex.ts — query.graph doesn't always resolve
+  // variant inventory_quantity. Default optimistic; live PDP shows truth.
+  const inStock = (p.variants ?? []).every((v) => {
     if (v.manage_inventory === false) return true;
-    return (v.inventory_quantity ?? 0) > 0;
+    if (typeof v.inventory_quantity === "number") return v.inventory_quantity > 0;
+    return true;
   });
   return {
     objectID: p.id,
