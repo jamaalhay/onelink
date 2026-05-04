@@ -7,6 +7,7 @@ import { Footer } from "@/components/site/footer";
 import { AgeGate } from "@/components/site/age-gate";
 import { DemoNav } from "@/components/site/demo-nav";
 import { AnalyticsScript } from "@/components/site/analytics-script";
+import { ChromeGate } from "@/components/site/chrome-gate";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,12 +43,16 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <AnalyticsScript />
-        <DemoNav />
-        <TopDeliveryBar />
-        <Header />
+        <ChromeGate>
+          <DemoNav />
+          <TopDeliveryBar />
+          <Header />
+        </ChromeGate>
         <main className="flex-1">{children}</main>
-        <Footer />
-        <AgeGate />
+        <ChromeGate>
+          <Footer />
+          <AgeGate />
+        </ChromeGate>
       </body>
     </html>
   );
