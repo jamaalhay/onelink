@@ -37,7 +37,7 @@ export default async function HomePage() {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/shop"
-                className="h-12 inline-flex items-center px-6 rounded-[var(--radius-button)] bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-medium transition-all active:scale-[0.98] hover:-translate-y-px"
+                className="h-12 inline-flex items-center px-6 rounded-[var(--radius-button)] bg-[var(--color-accent-bg)] hover:bg-[var(--color-accent-bg-hover)] text-white font-medium transition-all active:scale-[0.98] hover:-translate-y-px"
               >
                 Shop now
               </Link>

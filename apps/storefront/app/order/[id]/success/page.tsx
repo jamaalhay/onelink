@@ -47,7 +47,7 @@ export default async function OrderSuccessPage({ params }: PageProps) {
           <div className="mt-6 flex flex-wrap gap-3 justify-center">
             <Link
               href={`/track/${order.id}`}
-              className="inline-flex items-center gap-2 h-12 px-5 rounded-[var(--radius-button)] bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-medium transition-all active:scale-[0.98]"
+              className="inline-flex items-center gap-2 h-12 px-5 rounded-[var(--radius-button)] bg-[var(--color-accent-bg)] hover:bg-[var(--color-accent-bg-hover)] text-white font-medium transition-all active:scale-[0.98]"
             >
               Track your order
               <ArrowRight size={16} weight="bold" />

@@ -42,7 +42,7 @@ export function NeedHelp({ message }: NeedHelpProps) {
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => trackWhatsAppClick("need-help")}
-          className="h-10 px-4 inline-flex items-center justify-center gap-2 rounded-[var(--radius-button)] bg-[var(--color-whatsapp)] hover:opacity-90 text-white text-sm font-medium transition-opacity"
+          className="h-10 px-4 inline-flex items-center justify-center gap-2 rounded-[var(--radius-button)] bg-[var(--color-whatsapp-bg)] hover:opacity-90 text-white text-sm font-medium transition-opacity"
         >
           <WhatsappLogo size={16} weight="fill" />
           Chat on WhatsApp

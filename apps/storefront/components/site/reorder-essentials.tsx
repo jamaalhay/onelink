@@ -50,7 +50,7 @@ export async function ReorderEssentials() {
             </div>
             <Link
               href={`/products/${p.slug}`}
-              className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white transition-colors"
+              className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-[var(--color-accent-bg)] hover:bg-[var(--color-accent-bg-hover)] text-white transition-colors"
               aria-label={`Reorder ${p.title}`}
             >
               <ArrowClockwise size={14} weight="bold" />

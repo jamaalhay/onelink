@@ -54,7 +54,7 @@ export function WhatsAppCta({ message, variant = "strip", context }: WhatsAppCta
           target="_blank"
           rel="noopener noreferrer"
           onClick={handleClick}
-          className="inline-flex items-center gap-2 h-11 px-5 rounded-[var(--radius-button)] bg-[var(--color-whatsapp)] hover:opacity-90 text-white font-medium transition-opacity active:scale-[0.98]"
+          className="inline-flex items-center gap-2 h-11 px-5 rounded-[var(--radius-button)] bg-[var(--color-whatsapp-bg)] hover:opacity-90 text-white font-medium transition-opacity active:scale-[0.98]"
         >
           <WhatsappLogo size={18} weight="fill" />
           Chat on WhatsApp

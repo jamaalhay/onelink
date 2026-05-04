@@ -58,7 +58,7 @@ export default function TrackIndex() {
 
         <button
           type="submit"
-          className="inline-flex w-full items-center justify-center gap-2 h-12 px-6 rounded-[var(--radius-button)] bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-medium transition-all active:scale-[0.98]"
+          className="inline-flex w-full items-center justify-center gap-2 h-12 px-6 rounded-[var(--radius-button)] bg-[var(--color-accent-bg)] hover:bg-[var(--color-accent-bg-hover)] text-white font-medium transition-all active:scale-[0.98]"
         >
           <MagnifyingGlass size={16} weight="bold" />
           Track order

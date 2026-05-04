@@ -341,7 +341,7 @@ function CheckoutFormInner({
           type="button"
           onClick={handlePlace}
           disabled={pending}
-          className="inline-flex items-center justify-center h-12 px-6 rounded-[var(--radius-button)] bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-medium transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+          className="inline-flex items-center justify-center h-12 px-6 rounded-[var(--radius-button)] bg-[var(--color-accent-bg)] hover:bg-[var(--color-accent-bg-hover)] text-white font-medium transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {pending ? "Placing order…" : "Place order"}
         </button>

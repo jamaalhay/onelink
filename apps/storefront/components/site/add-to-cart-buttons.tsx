@@ -126,7 +126,7 @@ export function AddToCartButtons({ product }: AddToCartButtonsProps) {
           type="button"
           onClick={() => handleAddToCart("stay")}
           disabled={!inStock || pending}
-          className="flex-1 h-12 inline-flex items-center justify-center gap-2 rounded-[var(--radius-button)] bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-medium transition-all active:scale-[0.98] hover:-translate-y-px disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 h-12 inline-flex items-center justify-center gap-2 rounded-[var(--radius-button)] bg-[var(--color-accent-bg)] hover:bg-[var(--color-accent-bg-hover)] text-white font-medium transition-all active:scale-[0.98] hover:-translate-y-px disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {justAdded ? (
             <>

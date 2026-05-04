@@ -61,7 +61,7 @@ export function AgeGate() {
               setGate();
               setVisible(false);
             }}
-            className="flex-1 h-11 rounded-[var(--radius-button)] bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-medium transition-colors active:scale-[0.98]"
+            className="flex-1 h-11 rounded-[var(--radius-button)] bg-[var(--color-accent-bg)] hover:bg-[var(--color-accent-bg-hover)] text-white font-medium transition-colors active:scale-[0.98]"
           >
             Yes, I&apos;m 18+
           </button>

@@ -20,7 +20,7 @@ export function CheckoutStepper({ current }: CheckoutStepperProps) {
             <span
               className={
                 completed || active
-                  ? "inline-flex items-center justify-center w-8 h-8 rounded-full bg-[var(--color-accent)] text-white text-sm font-semibold"
+                  ? "inline-flex items-center justify-center w-8 h-8 rounded-full bg-[var(--color-accent-bg)] text-white text-sm font-semibold"
                   : "inline-flex items-center justify-center w-8 h-8 rounded-full border-2 border-[var(--color-border-strong)] text-[var(--color-text-dim)] text-sm font-semibold"
               }
             >

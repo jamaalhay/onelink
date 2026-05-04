@@ -28,7 +28,7 @@ export default async function CartPage() {
           </p>
           <Link
             href="/shop"
-            className="mt-8 inline-flex items-center gap-2 h-12 px-6 rounded-[var(--radius-button)] bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-medium"
+            className="mt-8 inline-flex items-center gap-2 h-12 px-6 rounded-[var(--radius-button)] bg-[var(--color-accent-bg)] hover:bg-[var(--color-accent-bg-hover)] text-white font-medium"
           >
             Browse the shop
           </Link>
@@ -102,7 +102,7 @@ export default async function CartPage() {
             </div>
             <Link
               href="/checkout"
-              className="mt-3 h-12 w-full inline-flex items-center justify-center gap-2 rounded-[var(--radius-button)] bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-medium transition-all active:scale-[0.98]"
+              className="mt-3 h-12 w-full inline-flex items-center justify-center gap-2 rounded-[var(--radius-button)] bg-[var(--color-accent-bg)] hover:bg-[var(--color-accent-bg-hover)] text-white font-medium transition-all active:scale-[0.98]"
             >
               <ShoppingBag size={18} weight="bold" />
               Proceed to Checkout

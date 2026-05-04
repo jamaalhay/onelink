@@ -29,6 +29,11 @@
   /* ── Accent (use sparingly) ───────────────────── */
   --color-accent: #2F8BD8;
   --color-accent-hover: #267BC2;
+  /* Use these for button backgrounds carrying white text — they pass WCAG AA
+   * (4.5:1 on white). The lighter `--color-accent` stays the brand voice for
+   * icons, borders, focus rings, and tints. */
+  --color-accent-bg: #1F6CA8;
+  --color-accent-bg-hover: #185988;
 
   /* ── Status ───────────────────────────────────── */
   --color-success: #047857;
@@ -37,6 +42,9 @@
 
   /* ── Brand-specific ───────────────────────────── */
   --color-whatsapp: #25D366;
+  /* Darker WhatsApp green for button backgrounds carrying white text —
+   * passes WCAG AA. Brand green stays for the icon glyph. */
+  --color-whatsapp-bg: #0E7A6E;
 
   /* ── shadcn token map → Onelink brand ─────────── */
   --color-background: var(--color-bg);

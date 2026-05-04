@@ -57,7 +57,7 @@ export function CartDrawer({ cart }: CartDrawerProps) {
       >
         <ShoppingBag size={20} />
         {itemCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-[var(--color-accent)] text-white text-[10px] font-semibold">
+          <span className="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-[var(--color-accent-bg)] text-white text-[10px] font-semibold">
             {itemCount}
           </span>
         )}
@@ -120,7 +120,7 @@ export function CartDrawer({ cart }: CartDrawerProps) {
                 render={
                   <Link
                     href="/checkout"
-                    className="mt-1 h-11 w-full inline-flex items-center justify-center gap-2 rounded-[var(--radius-button)] bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-sm font-medium transition-colors"
+                    className="mt-1 h-11 w-full inline-flex items-center justify-center gap-2 rounded-[var(--radius-button)] bg-[var(--color-accent-bg)] hover:bg-[var(--color-accent-bg-hover)] text-white text-sm font-medium transition-colors"
                   />
                 }
               >

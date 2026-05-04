@@ -19,9 +19,9 @@ export function StatusTimeline({ current }: StatusTimelineProps) {
             <span
               className={
                 completed
-                  ? "inline-flex items-center justify-center w-8 h-8 rounded-full bg-[var(--color-accent)]/60 text-white"
+                  ? "inline-flex items-center justify-center w-8 h-8 rounded-full bg-[var(--color-accent-bg)]/70 text-white"
                   : active
-                    ? "inline-flex items-center justify-center w-8 h-8 rounded-full bg-[var(--color-accent)] text-white"
+                    ? "inline-flex items-center justify-center w-8 h-8 rounded-full bg-[var(--color-accent-bg)] text-white"
                     : "inline-flex items-center justify-center w-8 h-8 rounded-full border-2 border-[var(--color-border-strong)] text-[var(--color-text-dim)] text-sm font-semibold"
               }
             >
