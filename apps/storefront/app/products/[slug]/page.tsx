@@ -12,6 +12,7 @@ import { ProductCard } from "@/components/site/product-card";
 import { WhatsAppCta } from "@/components/site/whatsapp-cta";
 import { TrustStrip } from "@/components/site/trust-strip";
 import { ReviewSummary } from "@/components/site/review-summary";
+import { TrackPageView } from "@/components/site/track-page-view";
 import {
   Accordion,
   AccordionContent,
@@ -47,6 +48,17 @@ export default async function ProductDetailPage({ params }: PdpProps) {
 
   return (
     <>
+      <TrackPageView
+        kind="product"
+        product={{
+          id: product.defaultVariantId ?? product.slug,
+          handle: product.slug,
+          title: product.title,
+          price: product.priceJmd,
+          currency: "JMD",
+          category: product.category,
+        }}
+      />
       {/* Breadcrumb */}
       <nav className="mx-auto max-w-[1400px] px-4 lg:px-10 pt-6 text-xs text-[var(--color-text-muted)]">
         <a href="/" className="hover:text-[var(--color-accent)]">Home</a>
@@ -100,7 +112,7 @@ export default async function ProductDetailPage({ params }: PdpProps) {
 
           <AddToCartButtons product={product} />
 
-          <WhatsAppCta variant="inline" message={`Hi Onelink, I have a question about ${product.title}.`} />
+          <WhatsAppCta variant="inline" context="pdp" message={`Hi Onelink, I have a question about ${product.title}.`} />
 
           {/* Delivery reassurance */}
           <div className="mt-2 grid grid-cols-2 gap-3 p-4 rounded-[var(--radius-card)] bg-[var(--color-bg-alt)] border border-[var(--color-border)]">

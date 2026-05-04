@@ -6,6 +6,7 @@ import { Header } from "@/components/site/header";
 import { Footer } from "@/components/site/footer";
 import { AgeGate } from "@/components/site/age-gate";
 import { DemoNav } from "@/components/site/demo-nav";
+import { AnalyticsScript } from "@/components/site/analytics-script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,6 +41,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <AnalyticsScript />
         <DemoNav />
         <TopDeliveryBar />
         <Header />

@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ShoppingBag, Minus, Plus, Check } from "@phosphor-icons/react/dist/ssr";
 import type { Product } from "@/lib/types";
+import { trackAddToCart } from "@/lib/analytics";
 
 interface AddToCartButtonsProps {
   product: Product;
@@ -33,6 +34,14 @@ export function AddToCartButtons({ product }: AddToCartButtonsProps) {
         const data = await res.json().catch(() => ({}));
         if (!res.ok || !data.ok) {
           console.error("[add-to-cart] failed:", res.status, data);
+        } else {
+          trackAddToCart({
+            variantId: variantId,
+            productTitle: product.title,
+            price: product.priceJmd,
+            quantity: qty,
+            currency: "JMD",
+          });
         }
       } catch (err) {
         console.error("[add-to-cart] threw:", err);

@@ -1,5 +1,8 @@
+"use client";
+
 import { Question, WhatsappLogo } from "@phosphor-icons/react/dist/ssr";
 import { whatsappLink } from "@/lib/whatsapp";
+import { trackWhatsAppClick } from "@/lib/analytics";
 
 interface NeedHelpProps {
   message?: string;
@@ -38,6 +41,7 @@ export function NeedHelp({ message }: NeedHelpProps) {
           href={wa}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackWhatsAppClick("need-help")}
           className="h-10 px-4 inline-flex items-center justify-center gap-2 rounded-[var(--radius-button)] bg-[var(--color-whatsapp)] hover:opacity-90 text-white text-sm font-medium transition-opacity"
         >
           <WhatsappLogo size={16} weight="fill" />

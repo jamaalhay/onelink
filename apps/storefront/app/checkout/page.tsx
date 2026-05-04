@@ -38,6 +38,12 @@ export default async function CheckoutPage() {
           initialShippingOptionId={cart.shipping_methods?.[0]?.shipping_option_id ?? null}
           cartTotal={cart.total ?? cart.subtotal ?? 0}
           cartCurrency={cart.currency_code ?? "jmd"}
+          cartItems={(cart.items ?? []).map((it) => ({
+            id: it.id,
+            product_title: it.product_title,
+            unit_price: it.unit_price,
+            quantity: it.quantity,
+          }))}
         />
 
         <div className="space-y-4 lg:sticky lg:top-28 lg:self-start">
@@ -58,7 +64,7 @@ export default async function CheckoutPage() {
               shipping_methods: cart.shipping_methods,
             }}
           />
-          <WhatsAppCta variant="inline" message="Hi Onelink, I need help at checkout." />
+          <WhatsAppCta variant="inline" context="checkout" message="Hi Onelink, I need help at checkout." />
         </div>
       </section>
     </>

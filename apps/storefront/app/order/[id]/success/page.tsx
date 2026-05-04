@@ -96,7 +96,7 @@ export default async function OrderSuccessPage({ params }: PageProps) {
         />
       </section>
 
-      <WhatsAppCta message={`Hi Onelink, question about order ${orderNumber}.`} />
+      <WhatsAppCta context="order-success" message={`Hi Onelink, question about order ${orderNumber}.`} />
       <TrustStrip />
     </>
   );

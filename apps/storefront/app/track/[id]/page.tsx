@@ -8,6 +8,7 @@ import { TrustStrip } from "@/components/site/trust-strip";
 import { WhatsAppCta } from "@/components/site/whatsapp-cta";
 import { NeedHelp } from "@/components/site/need-help";
 import { ReorderEssentials } from "@/components/site/reorder-essentials";
+import { TrackPageView } from "@/components/site/track-page-view";
 
 export const metadata = { title: "Track Order" };
 export const dynamic = "force-dynamic";
@@ -30,6 +31,7 @@ export default async function TrackPage({ params }: PageProps) {
 
   return (
     <>
+      <TrackPageView kind="order" orderId={order.id} />
       <section className="border-b border-[var(--color-border)]">
         <div className="mx-auto max-w-[1400px] px-4 lg:px-10 py-8">
           <p className="eyebrow mb-2">Tracking</p>
@@ -132,7 +134,7 @@ export default async function TrackPage({ params }: PageProps) {
             }}
             zoneLabel={zoneName}
           />
-          <WhatsAppCta variant="inline" message={`Hi Onelink, status update on ${orderNumber}?`} />
+          <WhatsAppCta variant="inline" context="track-order" message={`Hi Onelink, status update on ${orderNumber}?`} />
         </div>
       </section>
 

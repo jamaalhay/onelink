@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -11,6 +11,11 @@ import {
 } from "@stripe/react-stripe-js";
 import type { StripeElementsOptions } from "@stripe/stripe-js";
 import { getStripe, STRIPE_ENABLED } from "@/lib/stripe";
+import {
+  trackBeginCheckout,
+  trackPaymentMethodSelected,
+  trackPurchase,
+} from "@/lib/analytics";
 
 const stripePromise = STRIPE_ENABLED ? getStripe() : null;
 
@@ -21,12 +26,20 @@ export interface CheckoutShippingOption {
   data?: Record<string, unknown> | null;
 }
 
+export interface CheckoutFormCartItem {
+  id: string;
+  product_title?: string | null;
+  unit_price?: number | null;
+  quantity?: number | null;
+}
+
 interface CheckoutFormProps {
   shippingOptions: CheckoutShippingOption[];
   initialEmail?: string | null;
   initialShippingOptionId?: string | null;
   cartTotal: number;
   cartCurrency: string;
+  cartItems?: CheckoutFormCartItem[];
 }
 
 // Wraps the inner form in <Elements> when Stripe is enabled so the
@@ -63,6 +76,9 @@ function CheckoutFormInner({
   shippingOptions,
   initialEmail,
   initialShippingOptionId,
+  cartTotal,
+  cartCurrency,
+  cartItems,
 }: CheckoutFormProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -70,6 +86,24 @@ function CheckoutFormInner({
 
   const stripe = useStripe();
   const elements = useElements();
+
+  // Fire begin_checkout exactly once per checkout-page mount. React strict
+  // mode double-invokes effects in dev, so guard with a ref.
+  const beganRef = useRef(false);
+  useEffect(() => {
+    if (beganRef.current) return;
+    beganRef.current = true;
+    trackBeginCheckout({
+      total: cartTotal,
+      currency: cartCurrency,
+      items: cartItems?.map((it) => ({
+        id: it.id,
+        product_title: it.product_title ?? undefined,
+        quantity: it.quantity ?? undefined,
+        unit_price: it.unit_price ?? undefined,
+      })) ?? null,
+    });
+  }, [cartTotal, cartCurrency, cartItems]);
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -84,6 +118,12 @@ function CheckoutFormInner({
   );
 
   const [paymentMethod, setPaymentMethod] = useState<"card" | "cod">("card");
+
+  const selectPaymentMethod = (m: "card" | "cod") => {
+    if (m === paymentMethod) return;
+    setPaymentMethod(m);
+    trackPaymentMethodSelected(m);
+  };
 
   const handlePlace = () => {
     setError(null);
@@ -166,6 +206,12 @@ function CheckoutFormInner({
           });
           const completeData = await completeRes.json().catch(() => ({}));
           if (completeRes.ok && completeData.ok && completeData.orderId) {
+            trackPurchase({
+              orderId: completeData.orderId,
+              total: cartTotal,
+              currency: cartCurrency,
+              paymentMethod: "card",
+            });
             router.push(`/order/${completeData.orderId}/success`);
             router.refresh();
           } else {
@@ -189,6 +235,12 @@ function CheckoutFormInner({
         });
         const data = await res.json().catch(() => ({}));
         if (res.ok && data.ok && data.orderId) {
+          trackPurchase({
+            orderId: data.orderId,
+            total: cartTotal,
+            currency: cartCurrency,
+            paymentMethod,
+          });
           router.push(`/order/${data.orderId}/success`);
           router.refresh();
         } else {
@@ -255,14 +307,14 @@ function CheckoutFormInner({
           label="Card payment"
           detail={STRIPE_ENABLED ? "Visa, Mastercard, AmEx" : "Card (no real charge in this env)"}
           checked={paymentMethod === "card"}
-          onChange={() => setPaymentMethod("card")}
+          onChange={() => selectPaymentMethod("card")}
         />
         <PaymentRadio
           id="cod"
           label="Cash on Delivery"
           detail="Pay the rider on arrival"
           checked={paymentMethod === "cod"}
-          onChange={() => setPaymentMethod("cod")}
+          onChange={() => selectPaymentMethod("cod")}
         />
 
         {paymentMethod === "card" && STRIPE_ENABLED && (

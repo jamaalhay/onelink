@@ -5,6 +5,7 @@ import { CategoryChips } from "@/components/site/category-chips";
 import { FilterSidebar } from "@/components/site/filter-sidebar";
 import { TrustStrip } from "@/components/site/trust-strip";
 import { WhatsAppCta } from "@/components/site/whatsapp-cta";
+import { TrackPageView } from "@/components/site/track-page-view";
 
 interface CategoryPageProps {
   params: Promise<{ category: string }>;
@@ -28,6 +29,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
   return (
     <>
+      <TrackPageView kind="category" category={{ handle: cat.slug, name: cat.name }} />
       <section className="border-b border-[var(--color-border)]">
         <div className="mx-auto max-w-[1400px] px-4 lg:px-10 py-8 lg:py-10">
           <p className="eyebrow mb-2">Shop</p>

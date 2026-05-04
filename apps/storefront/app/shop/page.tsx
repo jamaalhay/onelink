@@ -6,6 +6,7 @@ import { TrustStrip } from "@/components/site/trust-strip";
 import { WhatsAppCta } from "@/components/site/whatsapp-cta";
 import { ShopSearch } from "@/components/site/shop-search";
 import { Pagination } from "@/components/site/pagination";
+import { TrackPageView } from "@/components/site/track-page-view";
 
 export const metadata = {
   title: "Shop",
@@ -24,6 +25,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
   const { products } = await fetchProducts({ q: trimmedQ, limit: 100 });
   return (
     <>
+      {trimmedQ && <TrackPageView kind="search" query={trimmedQ} />}
       <section className="border-b border-[var(--color-border)]">
         <div className="mx-auto max-w-[1400px] px-4 lg:px-10 py-8 lg:py-10">
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">

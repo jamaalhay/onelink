@@ -1,13 +1,20 @@
+"use client";
+
 import { WhatsappLogo } from "@phosphor-icons/react/dist/ssr";
 import { whatsappLink } from "@/lib/whatsapp";
+import { trackWhatsAppClick } from "@/lib/analytics";
 
 interface WhatsAppCtaProps {
   message?: string;
   variant?: "strip" | "inline";
+  /** Free-text label that identifies where this click happened (PDP, cart, …) */
+  context?: string;
 }
 
-export function WhatsAppCta({ message, variant = "strip" }: WhatsAppCtaProps) {
+export function WhatsAppCta({ message, variant = "strip", context }: WhatsAppCtaProps) {
   const href = whatsappLink({ message });
+  const ctx = context ?? variant;
+  const handleClick = () => trackWhatsAppClick(ctx);
 
   if (variant === "inline") {
     return (
@@ -15,6 +22,7 @@ export function WhatsAppCta({ message, variant = "strip" }: WhatsAppCtaProps) {
         href={href}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={handleClick}
         className="inline-flex items-center gap-2 text-sm font-medium text-[var(--color-text)] hover:text-[var(--color-whatsapp)] transition-colors"
       >
         <WhatsappLogo size={20} weight="fill" className="text-[var(--color-whatsapp)]" />
@@ -45,6 +53,7 @@ export function WhatsAppCta({ message, variant = "strip" }: WhatsAppCtaProps) {
           href={href}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={handleClick}
           className="inline-flex items-center gap-2 h-11 px-5 rounded-[var(--radius-button)] bg-[var(--color-whatsapp)] hover:opacity-90 text-white font-medium transition-opacity active:scale-[0.98]"
         >
           <WhatsappLogo size={18} weight="fill" />
