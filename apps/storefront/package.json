@@ -12,6 +12,7 @@
     "@base-ui/react": "^1.4.1",
     "@medusajs/js-sdk": "^2.14.2",
     "@phosphor-icons/react": "^2.1.10",
+    "@sentry/nextjs": "^10.51.0",
     "@stripe/react-stripe-js": "^6.3.0",
     "@stripe/stripe-js": "^9.4.0",
     "algoliasearch": "^5.52.0",

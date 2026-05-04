@@ -1,24 +1,18 @@
-// Uncomment this file to enable instrumentation and observability using OpenTelemetry
-// Refer to the docs for installation instructions: https://docs.medusajs.com/learn/debugging-and-testing/instrumentation
+import * as Sentry from "@sentry/node";
 
-// import { registerOtel } from "@medusajs/medusa"
-// // If using an exporter other than Zipkin, require it here.
-// import { ZipkinExporter } from "@opentelemetry/exporter-zipkin"
+// Medusa calls register() once at boot before any modules load. Sentry's
+// docs recommend initializing as early as possible so it can patch HTTP,
+// fs, and other instrumentations.
+export function register() {
+  const dsn = process.env.SENTRY_DSN;
+  if (!dsn) return;
 
-// // If using an exporter other than Zipkin, initialize it here.
-// const exporter = new ZipkinExporter({
-//   serviceName: 'my-medusa-project',
-// })
-
-// export function register() {
-//   registerOtel({
-//     serviceName: 'medusajs',
-//     // pass exporter
-//     exporter,
-//     instrument: {
-//       http: true,
-//       workflows: true,
-//       query: true
-//     },
-//   })
-// }
+  Sentry.init({
+    dsn,
+    environment: process.env.SENTRY_ENVIRONMENT ?? process.env.NODE_ENV ?? "production",
+    // Sample 10% of transactions for performance — adjust if you outgrow it.
+    tracesSampleRate: 0.1,
+    // Don't ship PII automatically — order data has phone, email, address.
+    sendDefaultPii: false,
+  });
+}
