@@ -66,6 +66,7 @@ export async function fetchCategories(): Promise<Category[]> {
 
 export async function fetchProducts(opts?: {
   category?: string;
+  q?: string;
   limit?: number;
   offset?: number;
 }): Promise<{ products: Product[]; total: number }> {
@@ -77,6 +78,7 @@ export async function fetchProducts(opts?: {
       fields: PRODUCT_FIELDS,
     };
     if (regionId) params.region_id = regionId;
+    if (opts?.q) params.q = opts.q;
     if (opts?.category) {
       const catId = await categoryIdByHandle(opts.category);
       // If category lookup fails for a known category slug, return empty rather

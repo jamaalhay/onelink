@@ -14,21 +14,33 @@ export const metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function ShopPage() {
-  const { products } = await fetchProducts({ limit: 100 });
+interface ShopPageProps {
+  searchParams: Promise<{ q?: string }>;
+}
+
+export default async function ShopPage({ searchParams }: ShopPageProps) {
+  const { q } = await searchParams;
+  const trimmedQ = q?.trim() || undefined;
+  const { products } = await fetchProducts({ q: trimmedQ, limit: 100 });
   return (
     <>
       <section className="border-b border-[var(--color-border)]">
         <div className="mx-auto max-w-[1400px] px-4 lg:px-10 py-8 lg:py-10">
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
             <div>
-              <p className="eyebrow mb-2">Shop</p>
-              <h1 className="text-3xl lg:text-4xl font-semibold tracking-tight">All Products</h1>
+              <p className="eyebrow mb-2">{trimmedQ ? "Search" : "Shop"}</p>
+              <h1 className="text-3xl lg:text-4xl font-semibold tracking-tight">
+                {trimmedQ ? `Results for "${trimmedQ}"` : "All Products"}
+              </h1>
               <p className="text-sm text-[var(--color-text-muted)] mt-2">
-                {products.length} items &mdash; ready for delivery
+                {products.length === 0
+                  ? trimmedQ
+                    ? "No matches. Try a different search."
+                    : "No products available."
+                  : `${products.length} ${products.length === 1 ? "item" : "items"} ${trimmedQ ? "matching" : "— ready for delivery"}`}
               </p>
             </div>
-            <ShopSearch />
+            <ShopSearch defaultValue={trimmedQ} />
           </div>
           <div className="mt-8">
             <CategoryChips />

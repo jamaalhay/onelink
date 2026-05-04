@@ -52,13 +52,13 @@ export async function Header() {
 
         {/* Right side */}
         <div className="flex items-center gap-1 text-[var(--color-text)]">
-          <button
-            type="button"
+          <Link
+            href="/shop"
             className="p-2.5 hover:bg-[var(--color-surface)] rounded-md transition-colors"
             aria-label="Search"
           >
             <MagnifyingGlass size={20} />
-          </button>
+          </Link>
           <Link
             href="/account"
             className="hidden sm:flex p-2.5 hover:bg-[var(--color-surface)] rounded-md transition-colors"
