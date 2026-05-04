@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ShieldCheck, Lock, Sparkle } from "@phosphor-icons/react/dist/ssr";
 import { fetchCategories, fetchFeaturedProducts } from "@/lib/medusa/server";
+import { fetchCmsHero } from "@/lib/sanity/queries";
 import { CategoryCard } from "@/components/site/category-card";
 import { ProductCard } from "@/components/site/product-card";
 import { TrustStrip } from "@/components/site/trust-strip";
@@ -11,11 +12,34 @@ import { WhatsAppCta } from "@/components/site/whatsapp-cta";
 
 export const dynamic = "force-dynamic";
 
+// Render `*word*` segments as accent-colored spans, plain text otherwise.
+function renderHeadline(headline: string) {
+  const parts = headline.split(/(\*[^*]+\*)/g);
+  return parts.map((p, i) => {
+    if (p.startsWith("*") && p.endsWith("*") && p.length > 2) {
+      return (
+        <span key={i} className="text-[var(--color-accent)]">
+          {p.slice(1, -1)}
+        </span>
+      );
+    }
+    return <span key={i}>{p}</span>;
+  });
+}
+
 export default async function HomePage() {
-  const [featured, categories] = await Promise.all([
+  const [featured, categories, hero] = await Promise.all([
     fetchFeaturedProducts(8),
     fetchCategories(),
+    fetchCmsHero(),
   ]);
+
+  const eyebrow = hero?.eyebrow ?? "Innovative · Helpful · Essential";
+  const subline =
+    hero?.subline ??
+    "Premium products delivered to your door in 15–30 minutes. Vapes, pouches, lighters, drinks, snacks — curated, discreetly packaged, on the way.";
+  const primaryCta = hero?.primaryCta ?? { label: "Shop now", href: "/shop" };
+  const secondaryCta = hero?.secondaryCta ?? { label: "Track an order", href: "/track" };
 
   return (
     <>
@@ -23,29 +47,33 @@ export default async function HomePage() {
       <section className="border-b border-[var(--color-border)]">
         <div className="mx-auto max-w-[1400px] px-4 lg:px-10 py-12 lg:py-20 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <div>
-            <p className="eyebrow mb-4">Innovative · Helpful · Essential</p>
+            <p className="eyebrow mb-4">{eyebrow}</p>
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.02]">
-              One link.<br />
-              Endless{" "}
-              <span className="text-[var(--color-accent)]">possibilities</span>.
+              {hero ? (
+                renderHeadline(hero.headline)
+              ) : (
+                <>
+                  One link.<br />
+                  Endless{" "}
+                  <span className="text-[var(--color-accent)]">possibilities</span>.
+                </>
+              )}
             </h1>
             <p className="mt-6 text-base lg:text-lg text-[var(--color-text-muted)] max-w-[52ch] leading-relaxed">
-              Premium products delivered to your door in 15&ndash;30 minutes.
-              Vapes, pouches, lighters, drinks, snacks &mdash; curated, discreetly
-              packaged, on the way.
+              {subline}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
-                href="/shop"
+                href={primaryCta.href ?? "/shop"}
                 className="h-12 inline-flex items-center px-6 rounded-[var(--radius-button)] bg-[var(--color-accent-bg)] hover:bg-[var(--color-accent-bg-hover)] text-white font-medium transition-all active:scale-[0.98] hover:-translate-y-px"
               >
-                Shop now
+                {primaryCta.label ?? "Shop now"}
               </Link>
               <Link
-                href="/track"
+                href={secondaryCta.href ?? "/track"}
                 className="h-12 inline-flex items-center px-6 rounded-[var(--radius-button)] border border-[var(--color-border)] hover:bg-[var(--color-surface)] font-medium transition-colors"
               >
-                Track an order
+                {secondaryCta.label ?? "Track an order"}
               </Link>
             </div>
             <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs text-[var(--color-text-muted)]">
