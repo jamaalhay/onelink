@@ -1,11 +1,17 @@
 "use client";
 
-import { NextStudio } from "next-sanity/studio";
-import config from "../../../sanity.config";
+import dynamic from "next/dynamic";
 
-// Embedded Sanity Studio at /studio. Renders only when
-// NEXT_PUBLIC_SANITY_PROJECT_ID is set (the config will throw otherwise).
-export const dynamic = "force-static";
+// NextStudio touches `window` at module init (Sanity's auth store reads
+// location for OAuth hash handling). Skip SSR entirely so it only runs in
+// the browser — otherwise Sentry catches a `window is not defined` on every
+// hit to /studio.
+const NextStudio = dynamic(
+  () => import("next-sanity/studio").then((m) => m.NextStudio),
+  { ssr: false }
+);
+
+import config from "../../../sanity.config";
 
 export default function StudioPage() {
   return <NextStudio config={config} />;
