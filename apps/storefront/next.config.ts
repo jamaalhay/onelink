@@ -14,16 +14,14 @@ const sentryEnabled = Boolean(process.env.NEXT_PUBLIC_SENTRY_DSN);
 
 export default sentryEnabled
   ? withSentryConfig(nextConfig, {
-      // Required because Sentry source-maps upload would otherwise need an auth
-      // token. We don't upload source maps for now — errors will still arrive
-      // with stack traces; just minified.
+      org: process.env.SENTRY_ORG ?? "candor-71",
+      project: process.env.SENTRY_PROJECT ?? "onelink-storefront",
+      // Auth token (set on Vercel as SENTRY_AUTH_TOKEN) lets the build upload
+      // source maps so Sentry stack traces are unminified.
+      authToken: process.env.SENTRY_AUTH_TOKEN,
       silent: true,
-      sourcemaps: { disable: true },
-      // Hide Sentry network calls behind our own domain so ad blockers don't
-      // drop them.
+      // Tunnel /monitoring so ad blockers don't eat Sentry network calls.
       tunnelRoute: "/monitoring",
-      // Don't auto-instrument all our pages with sentry-cli release; we're
-      // letting Vercel handle release detection via SENTRY_ENVIRONMENT.
       automaticVercelMonitors: false,
       disableLogger: true,
     })
