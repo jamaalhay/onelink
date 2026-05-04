@@ -162,7 +162,9 @@ const NewProductWizardPage = () => {
         status: "published",
         thumbnail: values.thumbnail.trim(),
         images: [values.thumbnail.trim(), ...galleryList].map((url) => ({ url })),
-        category_ids: [values.categoryId],
+        // Admin REST expects categories: [{ id }] — `category_ids` is the
+        // workflow API shape, easy to confuse.
+        categories: [{ id: values.categoryId }],
         sales_channels: [{ id: salesChannel.id }],
         shipping_profile_id: shippingProfile.id,
         options: [{ title: "Default", values: ["Default"] }],
