@@ -4,9 +4,9 @@
 
 ## Setup
 
-- **Storefront:** `https://onelinkjm.com`
-- **Admin:** `https://api.onelinkjm.com/app` (creds at `/tmp/onelink-spec/medusa-admin-creds.txt`)
-- **Sanity Studio:** `https://onelinkjm.com/studio` (skip unless authoring CMS content)
+- **Storefront:** [https://onelinkjm.com](https://onelinkjm.com)
+- **Admin:** [https://api.onelinkjm.com/app](https://api.onelinkjm.com/app) (creds at `/tmp/onelink-spec/medusa-admin-creds.txt`)
+- **Sanity Studio:** [https://onelinkjm.com/studio](https://onelinkjm.com/studio) (skip unless authoring CMS content)
 - **What you'll need:**
   - A **real credit/debit card** — Stripe is in **live mode**, so charges are real. Capture them in admin only if you want them collected; refund after.
   - A **real Jamaican phone number** that can receive SMS.
@@ -21,7 +21,7 @@ For each issue, capture: **page URL**, **what you did**, **what you expected**, 
 ## A. Storefront — first visit + browsing
 
 ### A1. First visit
-- [ ] Land on `/`. Age gate modal appears ("Are you 18 or older?"). Click **Yes, I'm 18+** → modal dismisses, doesn't reappear on subsequent visits within 30 days.
+- [ ] Land on [https://onelinkjm.com](https://onelinkjm.com). Age gate modal appears ("Are you 18 or older?"). Click **Yes, I'm 18+** → modal dismisses, doesn't reappear on subsequent visits within 30 days.
 - [ ] Top delivery bar reads "Delivering to **New Kingston** · ETA **15–30 min**".
 - [ ] Hero reads "One link. Endless **possibilities**." with the accent on "possibilities".
 - [ ] Footer renders with all category and customer-care links.
@@ -29,16 +29,16 @@ For each issue, capture: **page URL**, **what you did**, **what you expected**, 
 ### A2. Zone change
 - [ ] Click **Change** in the top delivery bar → dialog opens listing all 10 zones (New Kingston, Half Way Tree, Liguanea, Barbican, Cherry Gardens, Stony Hill, Constant Spring, Papine, Harbour View, Portmore) with ETA and fee.
 - [ ] Pick **Stony Hill** → dialog closes → top bar updates to "Delivering to Stony Hill · ETA 30–45 min".
-- [ ] Close the tab, reopen `/` → still shows Stony Hill (cookie persists).
+- [ ] Close the tab, reopen [https://onelinkjm.com](https://onelinkjm.com) → still shows Stony Hill (cookie persists).
 
 ### A3. Browsing
-- [ ] Header → **Shop** → `/shop` lists all 16 products. Sort dropdown is visible.
-- [ ] Header → **Categories** → loads `/shop/vapes` (4-5 products visible).
-- [ ] Click any category chip → URL updates to `/shop/<slug>`, products filter.
+- [ ] Header → **Shop** → [https://onelinkjm.com/shop](https://onelinkjm.com/shop) lists all 16 products. Sort dropdown is visible.
+- [ ] Header → **Categories** → loads [https://onelinkjm.com/shop/vapes](https://onelinkjm.com/shop/vapes) (4-5 products visible).
+- [ ] Click any category chip → URL updates to `https://onelinkjm.com/shop/<slug>`, products filter.
 - [ ] Click any product card → PDP loads with: hero image, title, price in JMD, brand, "In stock" badge, description, **Add to Cart** button, variant picker (only on Vuse Go and ZYN Cool Mint), reviews section, "More from <category>" related products.
 
 ### A4. Variants
-- [ ] Open `/products/vuse-go-1000-grape-ice` → variant picker shows **Grape Ice** / **Blue Razz Ice** / **Watermelon**.
+- [ ] Open [https://onelinkjm.com/products/vuse-go-1000-grape-ice](https://onelinkjm.com/products/vuse-go-1000-grape-ice) → variant picker shows **Grape Ice** / **Blue Razz Ice** / **Watermelon**.
 - [ ] Click each one → only the clicked variant has the accent border. Price stays the same.
 
 ### A5. Search
@@ -60,19 +60,19 @@ For each issue, capture: **page URL**, **what you did**, **what you expected**, 
 - [ ] Click `-` to decrease.
 - [ ] Click trash icon → item removes; if empty, drawer shows "Your cart is empty" with **Browse the shop**.
 - [ ] Re-add 2 different products → drawer shows both, totals correct.
-- [ ] Open `/cart` (full page) → same data as drawer.
+- [ ] Open [https://onelinkjm.com/cart](https://onelinkjm.com/cart) (full page) → same data as drawer.
 
 ### B3. Cart persistence
-- [ ] Close browser entirely, reopen `/cart` → cart still has the items (cookie persists 30 days).
+- [ ] Close browser entirely, reopen [https://onelinkjm.com/cart](https://onelinkjm.com/cart) → cart still has the items (cookie persists 30 days).
 
 ### B4. Checkout — card path
-- [ ] Cart drawer → **Proceed to Checkout** → `/checkout` loads with stepper at **Payment**.
+- [ ] Cart drawer → **Proceed to Checkout** → [https://onelinkjm.com/checkout](https://onelinkjm.com/checkout) loads with stepper at **Payment**.
 - [ ] Fill: full name, phone (real JM number), email (real inbox).
 - [ ] Fill: street address, optional landmark.
 - [ ] Pick a **Delivery zone** from dropdown.
 - [ ] Tick **Send updates via WhatsApp** under Order Updates *(falls back to SMS today — see Known issues)*.
 - [ ] Pick **Card payment** → Stripe Element renders. Enter real card.
-- [ ] Click **Place order** → after a few seconds, redirects to `/order/<id>/success`.
+- [ ] Click **Place order** → after a few seconds, redirects to `https://onelinkjm.com/order/<id>/success`.
 - [ ] Success page shows: order number `OL-XXXXXX`, total, payment label "Card · Paid", track-order button.
 
 ### B5. Checkout — COD path
@@ -86,17 +86,17 @@ For each issue, capture: **page URL**, **what you did**, **what you expected**, 
 - [ ] **Check spam folder** if neither arrives in 2 minutes — domain reputation is new.
 
 ### B7. Order success page
-- [ ] Visit `/order/<id>/success` again later → still loads (not session-bound).
-- [ ] **Track your order** button → `/track/<id>` loads.
-- [ ] **Continue shopping** button → `/shop` loads.
+- [ ] Visit `https://onelinkjm.com/order/<id>/success` again later → still loads (not session-bound).
+- [ ] **Track your order** button → `https://onelinkjm.com/track/<id>` loads.
+- [ ] **Continue shopping** button → [https://onelinkjm.com/shop](https://onelinkjm.com/shop) loads.
 
 ---
 
 ## C. Storefront — post-purchase
 
 ### C1. Tracking
-- [ ] `/track/<id>` shows: order number, ETA, **Order Progress** timeline, OpenStreetMap embed of the delivery zone, "Rider details on dispatch" placeholder card *(no real rider until dispatch system exists)*, order details (total, payment, items count), reorder essentials, need-help card.
-- [ ] `/track` (no id) → input field where you can paste an order id.
+- [ ] `https://onelinkjm.com/track/<id>` shows: order number, ETA, **Order Progress** timeline, OpenStreetMap embed of the delivery zone, "Rider details on dispatch" placeholder card *(no real rider until dispatch system exists)*, order details (total, payment, items count), reorder essentials, need-help card.
+- [ ] [https://onelinkjm.com/track](https://onelinkjm.com/track) (no id) → input field where you can paste an order id.
 - [ ] Click any **Chat on WhatsApp** button → opens WhatsApp web/app *(currently goes to placeholder number — see Known issues)*.
 
 ### C2. Reviews
@@ -113,17 +113,17 @@ For each issue, capture: **page URL**, **what you did**, **what you expected**, 
 ### C3. Information pages
 Quick render check — open each, confirm no errors, no broken images, all links visible:
 
-- [ ] `/faq`
-- [ ] `/shipping`
-- [ ] `/returns`
-- [ ] `/contact`
-- [ ] `/about`
-- [ ] `/coverage`
-- [ ] `/careers`
-- [ ] `/press`
-- [ ] `/legal/terms`
-- [ ] `/legal/privacy`
-- [ ] `/legal/age-policy`
+- [ ] [https://onelinkjm.com/faq](https://onelinkjm.com/faq)
+- [ ] [https://onelinkjm.com/shipping](https://onelinkjm.com/shipping)
+- [ ] [https://onelinkjm.com/returns](https://onelinkjm.com/returns)
+- [ ] [https://onelinkjm.com/contact](https://onelinkjm.com/contact)
+- [ ] [https://onelinkjm.com/about](https://onelinkjm.com/about)
+- [ ] [https://onelinkjm.com/coverage](https://onelinkjm.com/coverage)
+- [ ] [https://onelinkjm.com/careers](https://onelinkjm.com/careers)
+- [ ] [https://onelinkjm.com/press](https://onelinkjm.com/press)
+- [ ] [https://onelinkjm.com/legal/terms](https://onelinkjm.com/legal/terms)
+- [ ] [https://onelinkjm.com/legal/privacy](https://onelinkjm.com/legal/privacy)
+- [ ] [https://onelinkjm.com/legal/age-policy](https://onelinkjm.com/legal/age-policy)
 
 All email links should point to `@onelinkjm.com`. All WhatsApp links point to the support number *(currently placeholder)*.
 
@@ -132,14 +132,14 @@ All email links should point to `@onelinkjm.com`. All WhatsApp links point to th
 ## D. Admin — order management
 
 ### D1. Login
-- [ ] `/app` → login screen. Use creds from `/tmp/onelink-spec/medusa-admin-creds.txt`.
-- [ ] Lands on `/app/orders`.
+- [ ] [https://api.onelinkjm.com/app](https://api.onelinkjm.com/app) → login screen. Use creds from `/tmp/onelink-spec/medusa-admin-creds.txt`.
+- [ ] Lands on [https://api.onelinkjm.com/app/orders](https://api.onelinkjm.com/app/orders).
 
 ### D2. Onelink banner widget
-- [ ] Navigate to `/app/products` → orange-bordered "Onelink Admin" banner at the top with stats (Region, Zones, Categories, Payment).
+- [ ] Navigate to [https://api.onelinkjm.com/app/products](https://api.onelinkjm.com/app/products) → orange-bordered "Onelink Admin" banner at the top with stats (Region, Zones, Categories, Payment).
 
 ### D3. Order list + detail
-- [ ] `/app/orders` → table of orders, sortable columns.
+- [ ] [https://api.onelinkjm.com/app/orders](https://api.onelinkjm.com/app/orders) → table of orders, sortable columns.
 - [ ] Click your test order → detail page loads.
 - [ ] Detail shows: items + line totals, subtotal, shipping, total, payment status, fulfillment status, customer (name, email, phone), shipping address, billing address, activity timeline.
 
@@ -161,15 +161,15 @@ All email links should point to `@onelinkjm.com`. All WhatsApp links point to th
 ## E. Admin — product management
 
 ### E1. Stock product detail
-- [ ] `/app/products` → click any product → detail page with description, media, options, variants table, sales channels, shipping config, categories, attributes.
+- [ ] [https://api.onelinkjm.com/app/products](https://api.onelinkjm.com/app/products) → click any product → detail page with description, media, options, variants table, sales channels, shipping config, categories, attributes.
 - [ ] Edit the description → save → wait ~60s → storefront PDP reflects the change.
 
 ### E2. Custom 3-step wizard
-- [ ] `/app/wizard` → "Add product" stepper renders.
+- [ ] [https://api.onelinkjm.com/app/wizard](https://api.onelinkjm.com/app/wizard) → "Add product" stepper renders.
 - [ ] **Step 1 — Basic info:** Title (e.g. "Test Soda"), Handle auto-derives, Brand, Short description, pick a Category, Price (whole JMD number, e.g. `300`). Click **Next**.
 - [ ] **Step 2 — Media & inventory:** Thumbnail URL (use any public image), Stock count (e.g. `10`). Click **Next**.
 - [ ] **Step 3 — Review:** check the summary. Click **Create product** → toast "Product 'Test Soda' created".
-- [ ] Open `/app/products` → search "Test" → product is there, status **Published**.
+- [ ] Open [https://api.onelinkjm.com/app/products](https://api.onelinkjm.com/app/products) → search "Test" → product is there, status **Published**.
 - [ ] Open `https://onelinkjm.com/products/<handle>` → PDP renders with title, price, description, **Add to Cart** button visible (this is the inventory-level fix — verify Add to Cart actually works).
 - [ ] Add to cart → confirm cart badge updates.
 - [ ] **Cleanup:** back in admin, delete the test product from the product detail page.
@@ -186,7 +186,7 @@ All email links should point to `@onelinkjm.com`. All WhatsApp links point to th
 - [ ] **Stripe declined card**: at checkout, use `4000 0000 0000 0002` → see "Card declined" error inline, page doesn't navigate.
 - [ ] **Stripe insufficient funds**: `4000 0000 0000 9995` → similar error.
 - [ ] **Empty checkout submission**: leave name blank, hit Place order → "Please fill in your name, phone, and address."
-- [ ] **Empty cart at checkout**: navigate to `/checkout` directly with no cart cookie → redirects to `/cart`.
+- [ ] **Empty cart at checkout**: navigate to [https://onelinkjm.com/checkout](https://onelinkjm.com/checkout) directly with no cart cookie → redirects to [https://onelinkjm.com/cart](https://onelinkjm.com/cart).
 - [ ] **Hard refresh in middle of checkout**: form resets, no zombie state.
 - [ ] **Mobile layout**: scroll the home page on a phone → no overflow, all images fit, age gate looks right, cart drawer fills the screen.
 - [ ] **Slow connection**: Chrome DevTools → Network tab → throttle to "Slow 4G" → home loads in <3s, PDP in <2s.
@@ -196,7 +196,7 @@ All email links should point to `@onelinkjm.com`. All WhatsApp links point to th
 ## G. Analytics + monitoring spot-checks (optional but valuable)
 
 ### G1. GA4 events
-- [ ] In a separate tab, open GA4 → DebugView (admin → Configure → DebugView).
+- [ ] In a separate tab, open [GA4 DebugView](https://analytics.google.com/analytics/web/?#/p/reports/dashboard?params=_u..nav%3Ddebug) (admin → Configure → DebugView).
 - [ ] Run through B1–B6 again. Should see in DebugView (within ~30s):
   - `view_item_list` when you open a category
   - `search` when you submit search
@@ -209,7 +209,7 @@ All email links should point to `@onelinkjm.com`. All WhatsApp links point to th
   - `whatsapp_click` when you click any WA CTA
 
 ### G2. Sentry
-- [ ] Open `https://candor-71.sentry.io/issues/?project=onelink-storefront`.
+- [ ] Open [https://candor-71.sentry.io/issues/?project=onelink-storefront](https://candor-71.sentry.io/issues/?project=onelink-storefront).
 - [ ] No new errors should fire during normal flows.
 - [ ] If an error appears, click in → stack trace + breadcrumbs.
 
@@ -223,7 +223,7 @@ These are tracked and being worked on:
 - **WhatsApp opt-in at checkout silently falls back to SMS** — until the Twilio WA sender is approved, customers who tick the box still get SMS.
 - **Tracking page rider card shows "awaiting dispatch"** — there's no rider dispatch system yet, so the placeholder is permanent for every order.
 - **Tracking page map shows zone center, not real-time rider GPS** — same reason.
-- **Sanity Studio at `/studio` is empty** — schemas are ready, content not authored yet. Homepage hero + testimonials use hardcoded fallback copy.
+- **Sanity Studio at [https://onelinkjm.com/studio](https://onelinkjm.com/studio) is empty** — schemas are ready, content not authored yet. Homepage hero + testimonials use hardcoded fallback copy.
 - **No `/account` page** — the User icon in the header is dead.
 - **No order lookup by email** — if a customer loses the tracking link, they need to dig the order ID out of the SMS/email.
 - **No promo/discount code field at checkout** — Medusa supports it, UI not built.
