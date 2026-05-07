@@ -83,7 +83,16 @@ export async function POST(req: Request) {
       const cartFresh = await sdk.store.cart.retrieve(cartId, {
         fields: "id,*payment_collection,payment_collection.payment_sessions.*",
       });
-      if (!cartFresh.cart.payment_collection?.payment_sessions?.length) {
+      // If the user previously selected Card and then switched to COD, the cart
+      // still carries a Stripe payment session. Calling cart.complete() against
+      // a Stripe session that the customer never confirmed produces:
+      //   "Session: paysess_X was not authorized with the provider".
+      // Re-initiating the session for pp_cod_cod replaces whatever's there so
+      // cart.complete() authorizes against the COD provider (which is a no-op
+      // success). Always do this on the COD branch, regardless of prior state.
+      const sessions = cartFresh.cart.payment_collection?.payment_sessions ?? [];
+      const codSession = sessions.find((s) => s.provider_id === "pp_cod_cod");
+      if (!codSession) {
         await sdk.store.payment.initiatePaymentSession(cartFresh.cart, { provider_id: "pp_cod_cod" });
       }
     }
