@@ -31,14 +31,26 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
         body: JSON.stringify(body),
       }
     );
-    const data = await res.json().catch(() => ({}));
+    const rawBody = await res.text();
     if (!res.ok) {
+      // Surface the raw backend body so diagnostic info reaches the client
+      // even when the backend returns non-JSON 500s. Tighten this back to
+      // `error: data?.error ?? HTTP ${res.status}` once review submissions
+      // are stable in production.
+      console.error("[api/products/reviews] backend %d: %s", res.status, rawBody.slice(0, 500));
+      let parsed: { error?: string } | null = null;
+      try { parsed = JSON.parse(rawBody) as { error?: string }; } catch { /* not JSON */ }
       return NextResponse.json(
-        { ok: false, error: data?.error ?? `HTTP ${res.status}` },
+        {
+          ok: false,
+          error: parsed?.error ?? `HTTP ${res.status}`,
+          backend_body: rawBody.slice(0, 1000),
+        },
         { status: res.status }
       );
     }
     revalidatePath(`/products/${slug}`);
+    const data = JSON.parse(rawBody) as { review?: unknown };
     return NextResponse.json({ ok: true, review: data.review });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
