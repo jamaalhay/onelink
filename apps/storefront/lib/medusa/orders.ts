@@ -27,10 +27,42 @@ const ORDER_FIELDS = [
   "shipping_methods.name",
   "*payment_collections",
   "payment_collections.payments.*",
+  // Need provider_id to disambiguate Card (pp_stripe_stripe) from
+  // Cash on Delivery (pp_cod_cod) on the success/track pages —
+  // payment_status alone is "authorized" in both cases.
+  "payment_collections.payments.provider_id",
   "*fulfillments",
   "fulfillments.shipped_at",
   "fulfillments.delivered_at",
 ].join(",");
+
+// Find the provider_id of the most recent payment to disambiguate Card vs COD.
+// Returns null if no payments are present (shouldn't happen on a completed order).
+export function paymentProviderOf(order: {
+  payment_collections?: { payments?: { provider_id?: string | null }[] | null }[] | null;
+}): string | null {
+  for (const collection of order.payment_collections ?? []) {
+    for (const payment of collection.payments ?? []) {
+      if (payment.provider_id) return payment.provider_id;
+    }
+  }
+  return null;
+}
+
+export function paymentLabelOf(order: {
+  payment_status?: string | null;
+  payment_collections?: { payments?: { provider_id?: string | null }[] | null }[] | null;
+}): string {
+  const provider = paymentProviderOf(order);
+  if (provider === "pp_cod_cod") return "Cash on Delivery";
+  if (provider === "pp_stripe_stripe") {
+    return order.payment_status === "captured" ? "Card · Paid" : "Card · Authorized";
+  }
+  // Fallback: defer to payment_status only.
+  return order.payment_status === "captured" || order.payment_status === "authorized"
+    ? "Card · Paid"
+    : "Cash on Delivery";
+}
 
 export async function fetchOrder(orderId: string) {
   try {

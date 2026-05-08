@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CheckCircle, ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import { formatJmd } from "@/lib/format";
-import { fetchOrder } from "@/lib/medusa/orders";
+import { fetchOrder, paymentLabelOf } from "@/lib/medusa/orders";
 import { OrderSummary } from "@/components/site/order-summary";
 import { TrustStrip } from "@/components/site/trust-strip";
 import { WhatsAppCta } from "@/components/site/whatsapp-cta";
@@ -24,9 +24,7 @@ export default async function OrderSuccessPage({ params }: PageProps) {
   const customerName = order.shipping_address?.first_name ?? "friend";
   const orderNumber = `OL-${order.display_id ?? order.id.slice(-6).toUpperCase()}`;
   const placedAt = order.created_at ? new Date(order.created_at) : new Date();
-  const paymentLabel = order.payment_status === "captured" || order.payment_status === "authorized"
-    ? "Card · Paid"
-    : "Cash on Delivery";
+  const paymentLabel = paymentLabelOf(order);
   const zoneLabel = order.shipping_methods?.[0]?.name ?? "Kingston";
 
   return (

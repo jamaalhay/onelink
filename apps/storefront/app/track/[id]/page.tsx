@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { Phone, ChatCircleText, Motorcycle, Star } from "@phosphor-icons/react/dist/ssr";
 import { formatJmd } from "@/lib/format";
-import { fetchOrder, deriveOrderStage } from "@/lib/medusa/orders";
+import { fetchOrder, deriveOrderStage, paymentLabelOf } from "@/lib/medusa/orders";
 import { StatusTimeline } from "@/components/site/status-timeline";
 import { OrderSummary } from "@/components/site/order-summary";
 import { TrustStrip } from "@/components/site/trust-strip";
@@ -120,9 +120,7 @@ export default async function TrackPage({ params }: PageProps) {
               <dd className="text-[var(--color-text)] font-medium">{formatJmd(order.total ?? 0)}</dd>
               <dt className="text-[var(--color-text-muted)]">Payment</dt>
               <dd className="text-[var(--color-text)] font-medium">
-                {order.payment_status === "captured" || order.payment_status === "authorized"
-                  ? "Card"
-                  : "Cash on Delivery"}
+                {paymentLabelOf(order)}
               </dd>
               <dt className="text-[var(--color-text-muted)]">Items</dt>
               <dd className="text-[var(--color-text)] font-medium">{(order.items ?? []).length}</dd>
