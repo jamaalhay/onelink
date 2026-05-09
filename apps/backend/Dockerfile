@@ -29,9 +29,14 @@ WORKDIR /repo
 COPY --from=builder /repo/node_modules ./node_modules
 COPY --from=builder /repo/apps/backend ./apps/backend
 
-WORKDIR /repo/apps/backend
+WORKDIR /repo/apps/backend/.medusa/server
 
 EXPOSE 9000
 
-# Run migrations first, then start the server. Migrations are idempotent.
-CMD ["sh", "-c", "pnpm exec medusa db:migrate && pnpm start"]
+# Run migrations and start from the BUILT output dir (.medusa/server). Migrate
+# walks modules/*/migrations from the cwd, and apps/backend/.medusa/server is
+# where the build emits everything. Running migrate from /repo/apps/backend
+# (the source tree) silently skipped custom modules' migrations on prior
+# deploys — caught when product_review's table never got created on Railway.
+# Migrations are idempotent so re-running on every boot is safe.
+CMD ["sh", "-c", "/repo/apps/backend/node_modules/.bin/medusa db:migrate && /repo/apps/backend/node_modules/.bin/medusa start"]
