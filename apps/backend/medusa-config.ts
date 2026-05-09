@@ -1,3 +1,8 @@
+// Side-effect import: initializes Sentry before Medusa loads modules / HTTP
+// so unhandled exceptions in routes, subscribers, and workflows are captured.
+// Must be the first import.
+import "./instrumentation"
+
 import { loadEnv, defineConfig } from '@medusajs/framework/utils'
 
 loadEnv(process.env.NODE_ENV || 'development', process.cwd())
