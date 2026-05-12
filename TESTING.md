@@ -9,7 +9,7 @@
 - **Sanity Studio:** [https://onelinkjm.com/studio](https://onelinkjm.com/studio) (skip unless authoring CMS content)
 - **What you'll need:**
   - A **real credit/debit card** — Stripe is in **live mode**, so charges are real. Capture them in admin only if you want them collected; refund after.
-  - A **real Jamaican phone number** that can receive SMS.
+  - A **real Jamaican phone number** that can receive SMS and WhatsApp.
   - A **real email** address to receive order confirmations.
   - Test on **Chrome (desktop) and a phone** (iOS Safari or Android Chrome).
 - **Tip:** open the admin orders page in a separate tab so you can watch orders/payments roll in as you test the storefront.
@@ -71,7 +71,7 @@ For each issue, capture: **page URL**, **what you did**, **what you expected**, 
 - [ ] Fill: full name, phone (real JM number), email (real inbox).
 - [ ] Fill: street address, optional landmark.
 - [ ] Pick a **Delivery zone** from dropdown.
-- [ ] Tick **Send updates via WhatsApp** under Order Updates *(falls back to SMS today — see Known issues)*.
+- [ ] Tick **Send updates via WhatsApp** under Order Updates.
 - [ ] Pick **Card payment** → Stripe Element renders. Enter real card.
 - [ ] Click **Place order** → after a few seconds, redirects to `https://onelinkjm.com/order/<id>/success`.
 - [ ] Success page shows: order number `OL-XXXXXX`, total, payment label "Card · Paid", track-order button.
@@ -82,7 +82,8 @@ For each issue, capture: **page URL**, **what you did**, **what you expected**, 
 - [ ] Click **Place order** → redirect to success page → payment label "Cash on Delivery".
 
 ### B6. Notifications
-- [ ] **SMS** arrives on the JM number within ~30s with the order number + tracking URL.
+- [ ] **WhatsApp** arrives on the JM number within ~30s with the order number + tracking URL when the WA template for that workflow is approved/configured.
+- [ ] **SMS** arrives on the JM number within ~30s when WhatsApp is not selected or the WA workflow is intentionally falling back.
 - [ ] **Email** arrives at the inbox with the order summary HTML.
 - [ ] **Check spam folder** if neither arrives in 2 minutes — domain reputation is new.
 
@@ -98,7 +99,7 @@ For each issue, capture: **page URL**, **what you did**, **what you expected**, 
 ### C1. Tracking
 - [ ] `https://onelinkjm.com/track/<id>` shows: order number, ETA, **Order Progress** timeline, OpenStreetMap embed of the delivery zone, "Rider details on dispatch" placeholder card *(no real rider until dispatch system exists)*, order details (total, payment, items count), reorder essentials, need-help card.
 - [ ] [https://onelinkjm.com/track](https://onelinkjm.com/track) (no id) → input field where you can paste an order id.
-- [ ] Click any **Chat on WhatsApp** button → opens WhatsApp web/app *(currently goes to placeholder number — see Known issues)*.
+- [ ] Click any **Chat on WhatsApp** button → opens WhatsApp web/app to the Onelink support number.
 
 ### C2. Reviews
 - [ ] Open any PDP. If there are no reviews, you'll see "Be the first to review the <title>" callout.
@@ -126,7 +127,7 @@ Quick render check — open each, confirm no errors, no broken images, all links
 - [ ] [https://onelinkjm.com/legal/privacy](https://onelinkjm.com/legal/privacy)
 - [ ] [https://onelinkjm.com/legal/age-policy](https://onelinkjm.com/legal/age-policy)
 
-All email links should point to `@onelinkjm.com`. All WhatsApp links point to the support number *(currently placeholder)*.
+All email links should point to `@onelinkjm.com`. All WhatsApp links point to the Onelink support number.
 
 ---
 
@@ -220,8 +221,7 @@ All email links should point to `@onelinkjm.com`. All WhatsApp links point to th
 
 These are tracked and being worked on:
 
-- **WhatsApp links point to `+18760000000`** — placeholder until the real number is wired (waiting on Digicel eSIM + Twilio Sender Registration).
-- **WhatsApp opt-in at checkout silently falls back to SMS** — until the Twilio WA sender is approved, customers who tick the box still get SMS.
+- **Order confirmation / rider-dispatched WhatsApp templates are pending approval** — until Twilio/WhatsApp approves the replacement templates, those workflows deliberately fall back to SMS. The Onelink WhatsApp sender is online and the delivered-order template is approved.
 - **Tracking page rider card shows "awaiting dispatch"** — there's no rider dispatch system yet, so the placeholder is permanent for every order.
 - **Tracking page map shows zone center, not real-time rider GPS** — same reason.
 - **Sanity Studio at [https://onelinkjm.com/studio](https://onelinkjm.com/studio) is empty** — schemas are ready, content not authored yet. Homepage hero + testimonials use hardcoded fallback copy.

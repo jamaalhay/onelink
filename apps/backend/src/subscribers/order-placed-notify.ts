@@ -162,6 +162,15 @@ export default async function orderPlacedNotify({
         channel: phoneChannel,
         template: "order-placed",
         content: { text: smsBody },
+        data: {
+          body: smsBody,
+          contentVariables: {
+            "1": orderNumber,
+            "2": String(itemCount),
+            "3": fmtAmt(order.total, currency),
+            "4": trackUrl,
+          },
+        },
         trigger_type: "order.placed",
         resource_id: orderId,
         resource_type: "order",

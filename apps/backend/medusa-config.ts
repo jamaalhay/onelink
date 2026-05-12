@@ -74,9 +74,10 @@ module.exports = defineConfig({
         process.env.TWILIO_AUTH_TOKEN &&
         process.env.TWILIO_FROM_NUMBER
       ) {
-        // Same provider class handles SMS and WhatsApp — Twilio's API only
-        // differs by `From: whatsapp:` prefix. WA channel is registered too;
-        // the provider falls back to SMS if TWILIO_WHATSAPP_FROM isn't set.
+        // Same provider class handles SMS and WhatsApp. WA can use either a
+        // direct whatsapp:+ sender or a Messaging Service whose sender pool
+        // contains the approved WhatsApp sender. Approved Content Templates are
+        // selected per Medusa notification template when configured.
         providers.push({
           resolve: "./src/modules/twilio-sms",
           id: "twilio-sms",
@@ -85,6 +86,20 @@ module.exports = defineConfig({
             authToken: process.env.TWILIO_AUTH_TOKEN,
             fromNumber: process.env.TWILIO_FROM_NUMBER,
             whatsappFromNumber: process.env.TWILIO_WHATSAPP_FROM,
+            whatsappMessagingServiceSid:
+              process.env.TWILIO_WHATSAPP_MESSAGING_SERVICE_SID,
+            whatsappContentSid: process.env.TWILIO_WHATSAPP_CONTENT_SID,
+            allowWhatsAppFreeform:
+              process.env.TWILIO_WHATSAPP_ALLOW_FREEFORM === "true",
+            whatsappContentSids: {
+              "order-placed":
+                process.env.TWILIO_WHATSAPP_ORDER_PLACED_CONTENT_SID ??
+                process.env.TWILIO_WHATSAPP_CONTENT_SID,
+              "shipment.created":
+                process.env.TWILIO_WHATSAPP_ORDER_ON_THE_WAY_CONTENT_SID,
+              "delivery.created":
+                process.env.TWILIO_WHATSAPP_ORDER_DELIVERED_CONTENT_SID,
+            },
             // Channels go inside provider.options.channels (not top-level —
             // counterintuitive but it's how @medusajs/notification's loader
             // reads them).
