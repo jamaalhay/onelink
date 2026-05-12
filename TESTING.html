@@ -259,6 +259,7 @@
         <a href="#checkout">Checkout</a>
         <a href="#notifications">Notifications</a>
         <a href="#postpurchase">Post Purchase</a>
+        <a href="#access">Admin Access</a>
         <a href="#admin">Admin</a>
         <a href="#mobile">Mobile</a>
         <a href="#known">Known Issues</a>
@@ -291,6 +292,19 @@
           <label class="check"><input type="checkbox" /><span><strong>Use your real phone and email for notification tests.</strong> For COD, use a low-value cart and cancel the order in admin after testing.</span></label>
           <label class="check"><input type="checkbox" /><span><strong>Do not repeatedly reopen direct route URLs while testing a workflow.</strong> Move through the site UI, use browser tabs, and only paste URLs for explicit deep-link checks.</span></label>
           <label class="check"><input type="checkbox" /><span><strong>Record each issue with page URL, steps, expected result, actual result, device/browser, and screenshot.</strong></span></label>
+        </div>
+      </section>
+
+      <section id="access">
+        <div class="section-head">
+          <h2>Admin Access</h2>
+          <p>Admin login is required for order cleanup and back-office validation.</p>
+        </div>
+        <div class="checks">
+          <label class="check"><input type="checkbox" /><span><strong>Admin URL:</strong> open <a href="https://api.onelinkjm.com/app" target="_blank" rel="noreferrer">https://api.onelinkjm.com/app</a>.</span></label>
+          <label class="check"><input type="checkbox" /><span><strong>Credentials:</strong> Jamaal will send the admin email and password through a secure channel. Do not paste the password into this checklist, GitHub, screenshots, or issue reports.</span></label>
+          <label class="check"><input type="checkbox" /><span><strong>After login:</strong> keep admin open in a separate tab while testing checkout so you can verify and cancel QA orders.</span></label>
+          <label class="check"><input type="checkbox" /><span><strong>If login fails:</strong> capture only the error message and browser URL. Do not capture or share the password field.</span></label>
         </div>
       </section>
 
