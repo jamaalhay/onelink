@@ -364,7 +364,12 @@ function CheckoutFormInner({
 
         {paymentMethod === "card" && STRIPE_ENABLED && (
           <div className="mt-2 p-4 rounded-[var(--radius-button)] border border-[var(--color-border)] bg-white">
-            <PaymentElement options={{ layout: "tabs", wallets: { link: "never" } }} />
+            <PaymentElement
+              options={{
+                layout: "tabs",
+                wallets: { applePay: "never", googlePay: "never", link: "never" },
+              }}
+            />
           </div>
         )}
       </FormBlock>
