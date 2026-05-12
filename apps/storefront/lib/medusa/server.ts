@@ -116,26 +116,22 @@ export const fetchProducts = cacheRead(
   ["products"]
 );
 
-export const fetchProductByHandle = cacheRead(
-  async (handle: string): Promise<Product | null> => {
-    try {
-      const regionId = await getJamaicaRegionId();
-      const params: Record<string, unknown> = {
-        handle,
-        fields: PRODUCT_FIELDS,
-        limit: 1,
-      };
-      if (regionId) params.region_id = regionId;
-      const { products } = await sdk.store.product.list(params);
-      return products[0] ? adaptProduct(products[0]) : null;
-    } catch (err) {
-      console.error("[medusa.fetchProductByHandle]", err);
-      return null;
-    }
-  },
-  ["fetchProductByHandle"],
-  ["products"]
-);
+export async function fetchProductByHandle(handle: string): Promise<Product | null> {
+  try {
+    const regionId = await getJamaicaRegionId();
+    const params: Record<string, unknown> = {
+      handle,
+      fields: PRODUCT_FIELDS,
+      limit: 1,
+    };
+    if (regionId) params.region_id = regionId;
+    const { products } = await sdk.store.product.list(params);
+    return products[0] ? adaptProduct(products[0]) : null;
+  } catch (err) {
+    console.error("[medusa.fetchProductByHandle]", err);
+    return null;
+  }
+}
 
 export async function fetchRelatedProducts(
   handle: string,

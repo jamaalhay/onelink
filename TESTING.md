@@ -13,6 +13,7 @@
   - A **real email** address to receive order confirmations.
   - Test on **Chrome (desktop) and a phone** (iOS Safari or Android Chrome).
 - **Tip:** open the admin orders page in a separate tab so you can watch orders/payments roll in as you test the storefront.
+- **Automation note:** when testing workflows with DevTools/Playwright, keep the active browser tab/session and move through the UI or switch to existing tabs. Do not validate a workflow by repeatedly reopening direct route URLs; direct URL opens are only for explicit deep-link checks like empty checkout, reloadable success pages, or tracking links.
 
 For each issue, capture: **page URL**, **what you did**, **what you expected**, **what happened**, **screenshot** if it's visual.
 

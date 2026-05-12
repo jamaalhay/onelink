@@ -23,10 +23,10 @@ interface PdpProps {
   params: Promise<{ slug: string }>;
 }
 
-// 60s ISR — products and reviews don't change minute-to-minute, and any
-// cart-aware UI lives in the client-side header / drawer, so a cached
-// HTML response is safe.
-export const revalidate = 60;
+// Product availability and status are controlled in admin. Keep PDP responses
+// live so unpublished or deleted products stop being publicly reachable right
+// after the admin change is made.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: PdpProps) {
   const { slug } = await params;
