@@ -6,7 +6,7 @@ const CART_COOKIE = "onelink_cart_id";
 
 interface InitPayload {
   customer: { name: string; phone: string; email?: string };
-  address: { street: string; landmark?: string };
+  address: { street: string; landmark?: string; instructions?: string };
   shipping_option_id: string;
   notify_via_whatsapp?: boolean;
 }
@@ -63,6 +63,7 @@ export async function POST(req: Request) {
       },
       metadata: {
         notify_via_whatsapp: body.notify_via_whatsapp === true,
+        delivery_instructions: body.address.instructions?.trim() || undefined,
       },
     });
 

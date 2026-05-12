@@ -34,7 +34,14 @@ export function OrderSummary({ data, showItems = true, zoneLabel }: OrderSummary
     );
   }
   const items = data.items ?? [];
-  const subtotal = data.subtotal ?? 0;
+  const itemSubtotal = items.reduce((sum, it) => {
+    const lineTotal =
+      typeof it.total === "number"
+        ? it.total
+        : (it.unit_price ?? 0) * (it.quantity ?? 0);
+    return sum + lineTotal;
+  }, 0);
+  const subtotal = itemSubtotal > 0 ? itemSubtotal : (data.subtotal ?? 0);
   const shipping = data.shipping_total ?? 0;
   const total = data.total ?? subtotal;
   const shippingLabel = zoneLabel

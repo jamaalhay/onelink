@@ -332,10 +332,9 @@ const NewProductWizardPage = () => {
             <Input value={values.stock} onChange={set("stock")} placeholder="50" inputMode="numeric" />
           </Field>
           <Text size="small" className="text-ui-fg-muted">
-            Note: stock is captured here for reference but inventory levels are
-            attached separately on the stock-location side. The product is
-            created with manage_inventory enabled; set actual on-hand from the
-            Inventory tab.
+            Stock is attached to the first stock location after publish so the
+            storefront can sell this product immediately. If that setup fails,
+            you&apos;ll see a warning toast and can set inventory manually.
           </Text>
         </ProgressTabs.Content>
 

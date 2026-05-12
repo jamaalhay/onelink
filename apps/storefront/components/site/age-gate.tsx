@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import Image from "next/image";
 
 const COOKIE = "onelink_age_ok";
+const AGE_GATE_EVENT = "onelink-age-gate";
 
 function readGate(): boolean {
   if (typeof document === "undefined") return true;
@@ -15,6 +16,24 @@ function setGate() {
   // 30-day cookie
   const exp = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toUTCString();
   document.cookie = `${COOKIE}=1; expires=${exp}; path=/; samesite=lax`;
+  window.dispatchEvent(new Event(AGE_GATE_EVENT));
+}
+
+function subscribeAgeGate(callback: () => void) {
+  window.addEventListener(AGE_GATE_EVENT, callback);
+  window.addEventListener("storage", callback);
+  return () => {
+    window.removeEventListener(AGE_GATE_EVENT, callback);
+    window.removeEventListener("storage", callback);
+  };
+}
+
+function readVisibleSnapshot() {
+  return !readGate();
+}
+
+function readServerSnapshot() {
+  return false;
 }
 
 /**
@@ -22,11 +41,11 @@ function setGate() {
  * DESIGN.md §9 · Age Gate Modal.
  */
 export function AgeGate() {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    if (!readGate()) setVisible(true);
-  }, []);
+  const visible = useSyncExternalStore(
+    subscribeAgeGate,
+    readVisibleSnapshot,
+    readServerSnapshot
+  );
 
   if (!visible) return null;
 
@@ -42,7 +61,8 @@ export function AgeGate() {
           src="/brand/favicon-512.png"
           alt="Onelink"
           width={72}
-          height={24}
+          height={72}
+          className="h-[72px] w-[72px]"
         />
         <div className="flex flex-col gap-2">
           <h2 id="age-gate-title" className="text-2xl font-semibold tracking-tight text-[var(--color-text)]">
@@ -59,14 +79,13 @@ export function AgeGate() {
             type="button"
             onClick={() => {
               setGate();
-              setVisible(false);
             }}
             className="flex-1 h-11 rounded-[var(--radius-button)] bg-[var(--color-accent-bg)] hover:bg-[var(--color-accent-bg-hover)] text-white font-medium transition-colors active:scale-[0.98]"
           >
             Yes, I&apos;m 18+
           </button>
           <a
-            href="https://www.google.com"
+            href="https://www.google.com/"
             className="flex-1 h-11 inline-flex items-center justify-center rounded-[var(--radius-button)] border border-[var(--color-border)] hover:bg-[var(--color-surface)] text-[var(--color-text)] font-medium transition-colors"
           >
             No, exit

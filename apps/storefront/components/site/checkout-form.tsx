@@ -16,6 +16,7 @@ import {
   trackPaymentMethodSelected,
   trackPurchase,
 } from "@/lib/analytics";
+import { formatJmd } from "@/lib/format";
 
 const stripePromise = STRIPE_ENABLED ? getStripe() : null;
 
@@ -61,12 +62,8 @@ export function CheckoutForm(props: CheckoutFormProps) {
     [props.cartTotal, props.cartCurrency]
   );
 
-  if (!STRIPE_ENABLED || !stripePromise) {
-    return <CheckoutFormInner {...props} />;
-  }
-
   return (
-    <Elements stripe={stripePromise} options={options}>
+    <Elements stripe={stripePromise} options={STRIPE_ENABLED ? options : undefined}>
       <CheckoutFormInner {...props} />
     </Elements>
   );
@@ -82,6 +79,7 @@ function CheckoutFormInner({
 }: CheckoutFormProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [shippingPending, startShippingTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
   const stripe = useStripe();
@@ -114,16 +112,42 @@ function CheckoutFormInner({
   const [instructions, setInstructions] = useState("");
 
   const [shippingOptionId, setShippingOptionId] = useState<string>(
-    initialShippingOptionId ?? shippingOptions[0]?.id ?? ""
+    initialShippingOptionId ?? ""
   );
 
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "cod">("card");
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "cod">(STRIPE_ENABLED ? "card" : "cod");
   const [notifyViaWhatsApp, setNotifyViaWhatsApp] = useState(false);
 
   const selectPaymentMethod = (m: "card" | "cod") => {
     if (m === paymentMethod) return;
     setPaymentMethod(m);
     trackPaymentMethodSelected(m);
+  };
+
+  const selectedShippingOption = shippingOptions.find((o) => o.id === shippingOptionId);
+
+  const handleShippingChange = (id: string) => {
+    setShippingOptionId(id);
+    setError(null);
+    if (!id) return;
+
+    startShippingTransition(async () => {
+      try {
+        const res = await fetch("/api/cart/shipping", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ shipping_option_id: id }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) {
+          setError(data.error ?? `Could not update delivery zone (${res.status})`);
+          return;
+        }
+        router.refresh();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Could not update delivery zone");
+      }
+    });
   };
 
   const handlePlace = () => {
@@ -136,6 +160,10 @@ function CheckoutFormInner({
       setError("Please select a delivery zone.");
       return;
     }
+    if (paymentMethod === "card" && !STRIPE_ENABLED) {
+      setError("Card payment is not available in this environment. Choose Cash on Delivery.");
+      return;
+    }
 
     const customer = {
       name: name.trim(),
@@ -145,6 +173,7 @@ function CheckoutFormInner({
     const address = {
       street: street.trim(),
       landmark: landmark.trim() || undefined,
+      instructions: instructions.trim() || undefined,
     };
 
     startTransition(async () => {
@@ -277,19 +306,29 @@ function CheckoutFormInner({
           <span className="text-sm font-medium text-[var(--color-text)] mb-1.5 block">Delivery zone</span>
           <select
             value={shippingOptionId}
-            onChange={(e) => setShippingOptionId(e.target.value)}
+            onChange={(e) => handleShippingChange(e.target.value)}
             className="w-full h-11 px-3 rounded-[var(--radius-button)] border border-[var(--color-border)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-2"
           >
             {shippingOptions.length === 0 ? (
               <option value="">No zones available</option>
             ) : (
-              shippingOptions.map((o) => (
-                <option key={o.id} value={o.id}>
-                  {o.name}
-                </option>
-              ))
+              <>
+                <option value="">Choose delivery zone</option>
+                {shippingOptions.map((o) => (
+                  <option key={o.id} value={o.id}>
+                    {o.name}
+                  </option>
+                ))}
+              </>
             )}
           </select>
+          {shippingOptionId && selectedShippingOption && (
+            <span className="text-xs text-[var(--color-text-muted)] mt-1.5 block">
+              {shippingPending
+                ? "Updating order summary…"
+                : `Delivery fee ${formatJmd(selectedShippingOption.amount ?? 0)}.`}
+            </span>
+          )}
         </label>
         <label className="block">
           <span className="text-sm font-medium text-[var(--color-text)] mb-1.5 block">
@@ -309,9 +348,10 @@ function CheckoutFormInner({
         <PaymentRadio
           id="card"
           label="Card payment"
-          detail={STRIPE_ENABLED ? "Visa, Mastercard, AmEx" : "Card (no real charge in this env)"}
+          detail={STRIPE_ENABLED ? "Visa, Mastercard, AmEx" : "Unavailable in this environment"}
           checked={paymentMethod === "card"}
           onChange={() => selectPaymentMethod("card")}
+          disabled={!STRIPE_ENABLED}
         />
         <PaymentRadio
           id="cod"
@@ -421,18 +461,22 @@ function PaymentRadio({
   detail,
   checked,
   onChange,
+  disabled = false,
 }: {
   id: string;
   label: string;
   detail: string;
   checked: boolean;
   onChange: () => void;
+  disabled?: boolean;
 }) {
   return (
     <label
       htmlFor={id}
       className={`flex items-start gap-3 p-4 rounded-[var(--radius-button)] border cursor-pointer transition-colors ${
-        checked
+        disabled
+          ? "border-[var(--color-border)] bg-[var(--color-surface)] opacity-60 cursor-not-allowed"
+          : checked
           ? "border-[var(--color-accent)] bg-[var(--color-accent)]/5"
           : "border-[var(--color-border)] hover:border-[var(--color-border-strong)]"
       }`}
@@ -443,6 +487,7 @@ function PaymentRadio({
         id={id}
         checked={checked}
         onChange={onChange}
+        disabled={disabled}
         className="mt-1 w-4 h-4 border-[var(--color-border-strong)] text-[var(--color-accent)] focus:ring-[var(--color-accent)] focus:ring-offset-2"
       />
       <div>

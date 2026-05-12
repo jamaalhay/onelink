@@ -27,6 +27,10 @@ function renderHeadline(headline: string) {
   });
 }
 
+function getHeadlineLabel(headline?: string | null) {
+  return headline?.replace(/\*/g, "") ?? "One link. Endless possibilities.";
+}
+
 export default async function HomePage() {
   const [featured, categories, hero] = await Promise.all([
     fetchFeaturedProducts(8),
@@ -40,6 +44,7 @@ export default async function HomePage() {
     "Premium products delivered to your door in 15–30 minutes. Vapes, pouches, lighters, drinks, snacks — curated, discreetly packaged, on the way.";
   const primaryCta = hero?.primaryCta ?? { label: "Shop now", href: "/shop" };
   const secondaryCta = hero?.secondaryCta ?? { label: "Track an order", href: "/track" };
+  const headlineLabel = getHeadlineLabel(hero?.headline);
 
   return (
     <>
@@ -48,7 +53,10 @@ export default async function HomePage() {
         <div className="mx-auto max-w-[1400px] px-4 lg:px-10 py-12 lg:py-20 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <div>
             <p className="eyebrow mb-4">{eyebrow}</p>
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.02]">
+            <h1
+              aria-label={headlineLabel}
+              className="text-5xl sm:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.02]"
+            >
               {hero ? (
                 renderHeadline(hero.headline)
               ) : (

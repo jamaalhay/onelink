@@ -1,4 +1,5 @@
 import { InfoPage, InfoSection } from "@/components/site/info-page";
+import Link from "next/link";
 
 export const metadata = { title: "FAQ" };
 
@@ -31,14 +32,14 @@ export default function FaqPage() {
           Yes — for any order containing age-restricted products (vapes, ZYN, lighters, rolling
           papers), the rider will ask for government-issued photo ID before handing over the
           order. The recipient must be 18+. See our{" "}
-          <a href="/legal/age-policy" className="underline">Age Policy</a>.
+          <Link href="/legal/age-policy" className="underline">Age Policy</Link>.
         </p>
       </InfoSection>
 
       <InfoSection heading="Can I track my order?">
         <p>
           Yes. After checkout you get a tracking link via SMS and email. You can also visit{" "}
-          <a href="/track" className="underline">/track</a> any time and paste your order ID.
+          <Link href="/track" className="underline">/track</Link> any time and paste your order ID.
         </p>
       </InfoSection>
 
@@ -48,7 +49,7 @@ export default function FaqPage() {
           can&apos;t be returned once delivered. If your order arrives damaged, incorrect, or
           materially not as described, contact us within 24 hours and we&apos;ll make it right
           (replacement, partial refund, or full refund as applicable). Full policy on the{" "}
-          <a href="/returns" className="underline">Returns</a> page.
+          <Link href="/returns" className="underline">Returns</Link> page.
         </p>
       </InfoSection>
 
@@ -57,7 +58,7 @@ export default function FaqPage() {
           We currently cover ten zones across Kingston and surrounding areas. Available zones
           appear in the dropdown at checkout — if your address isn&apos;t there yet, drop us a
           line and we&apos;ll let you know when we expand. See the{" "}
-          <a href="/coverage" className="underline">Coverage map</a>.
+          <Link href="/coverage" className="underline">Coverage map</Link>.
         </p>
       </InfoSection>
 
@@ -73,7 +74,7 @@ export default function FaqPage() {
       <InfoSection heading="How do I become a rider?">
         <p>
           We&apos;re always looking for reliable riders. Hit the{" "}
-          <a href="/careers" className="underline">Careers</a> page or email us.
+          <Link href="/careers" className="underline">Careers</Link> page or email us.
         </p>
       </InfoSection>
     </InfoPage>

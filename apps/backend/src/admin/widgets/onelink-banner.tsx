@@ -2,11 +2,12 @@ import { defineWidgetConfig } from "@medusajs/admin-sdk";
 import { Container, Heading, Text, Badge } from "@medusajs/ui";
 
 const ONELINK_BLUE = "#2F8BD8";
+const ONELINK_ORANGE = "#F59E0B";
 const ONELINK_CHARCOAL = "#20242C";
 
 const OnelinkBanner = () => {
   return (
-    <Container className="p-6 mb-4 border-l-4" style={{ borderLeftColor: ONELINK_BLUE }}>
+    <Container className="p-6 mb-4 border-l-4" style={{ borderLeftColor: ONELINK_ORANGE }}>
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-4">
           <svg width="56" height="32" viewBox="0 0 96 32" fill="none">

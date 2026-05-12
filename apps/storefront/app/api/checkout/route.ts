@@ -7,7 +7,7 @@ const CART_COOKIE = "onelink_cart_id";
 
 interface PlacePayload {
   customer: { name: string; phone: string; email?: string };
-  address: { street: string; landmark?: string };
+  address: { street: string; landmark?: string; instructions?: string };
   shipping_option_id: string;
   payment_method?: "card" | "cod";
   notify_via_whatsapp?: boolean;
@@ -75,6 +75,7 @@ export async function POST(req: Request) {
         },
         metadata: {
           notify_via_whatsapp: body.notify_via_whatsapp === true,
+          delivery_instructions: body.address.instructions?.trim() || undefined,
         },
       });
 
@@ -90,11 +91,7 @@ export async function POST(req: Request) {
       // Re-initiating the session for pp_cod_cod replaces whatever's there so
       // cart.complete() authorizes against the COD provider (which is a no-op
       // success). Always do this on the COD branch, regardless of prior state.
-      const sessions = cartFresh.cart.payment_collection?.payment_sessions ?? [];
-      const codSession = sessions.find((s) => s.provider_id === "pp_cod_cod");
-      if (!codSession) {
-        await sdk.store.payment.initiatePaymentSession(cartFresh.cart, { provider_id: "pp_cod_cod" });
-      }
+      await sdk.store.payment.initiatePaymentSession(cartFresh.cart, { provider_id: "pp_cod_cod" });
     }
 
     // For card, the client-side stripe.confirmPayment has already authorized

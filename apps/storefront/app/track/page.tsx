@@ -30,7 +30,7 @@ export default function TrackIndex() {
   return (
     <section className="mx-auto max-w-md px-4 py-20">
       <p className="eyebrow mb-2">Track an order</p>
-      <h1 className="text-3xl font-semibold tracking-tight mb-3">Where's my order?</h1>
+      <h1 className="text-3xl font-semibold tracking-tight mb-3">Where&apos;s my order?</h1>
       <p className="text-sm text-[var(--color-text-muted)] mb-8">
         Paste the order ID (or tracking URL) from your order confirmation. You can find it in the link we sent you after checkout.
       </p>
@@ -66,7 +66,7 @@ export default function TrackIndex() {
       </form>
 
       <p className="mt-8 text-xs text-[var(--color-text-muted)] text-center">
-        Lost the link? Message us on WhatsApp with your order number — we'll send it back.
+        Lost the link? Message us on WhatsApp with your order number — we&apos;ll send it back.
       </p>
     </section>
   );

@@ -1,8 +1,13 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
-import { Star } from "@phosphor-icons/react/dist/ssr";
+import { useState, useTransition } from "react";
+import { Check, ShoppingBag, Star } from "@phosphor-icons/react/dist/ssr";
 import type { Product } from "@/lib/types";
 import { formatJmd, formatRating } from "@/lib/format";
+import { trackAddToCart } from "@/lib/analytics";
+import { useCart, type ClientCart } from "@/lib/cart/use-cart";
 
 interface ProductCardProps {
   product: Product;
@@ -10,6 +15,38 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const primaryBadge = product.badges[0];
+  const { replaceCart } = useCart();
+  const [pending, startTransition] = useTransition();
+  const [justAdded, setJustAdded] = useState(false);
+  const variantId = product.defaultVariantId;
+  const canAdd = product.inStock && Boolean(variantId);
+
+  const add = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!variantId) return;
+    startTransition(async () => {
+      const res = await fetch("/api/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ variant_id: variantId, quantity: 1 }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; cart?: ClientCart };
+      if (res.ok && data.ok) {
+        replaceCart(data.cart ?? null);
+        trackAddToCart({
+          variantId,
+          productTitle: product.title,
+          price: product.priceJmd,
+          quantity: 1,
+          currency: "JMD",
+        });
+        setJustAdded(true);
+        setTimeout(() => setJustAdded(false), 1600);
+      }
+    });
+  };
+
   return (
     <Link
       href={`/products/${product.slug}`}
@@ -55,6 +92,26 @@ export function ProductCard({ product }: ProductCardProps) {
             <span className="text-[var(--color-text-dim)]">({product.reviewCount})</span>
           </span>
         </div>
+        <button
+          type="button"
+          onClick={add}
+          disabled={!canAdd || pending}
+          className="mt-2 h-10 inline-flex items-center justify-center gap-2 rounded-[var(--radius-button)] bg-[var(--color-accent-bg)] hover:bg-[var(--color-accent-bg-hover)] text-white text-sm font-medium transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {justAdded ? (
+            <>
+              <Check size={15} weight="bold" />
+              Added
+            </>
+          ) : !canAdd ? (
+            "Out of Stock"
+          ) : (
+            <>
+              <ShoppingBag size={15} weight="bold" />
+              Add to Cart
+            </>
+          )}
+        </button>
       </div>
     </Link>
   );

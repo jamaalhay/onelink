@@ -1,8 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
-import { User, List } from "@phosphor-icons/react/dist/ssr";
+import { User } from "@phosphor-icons/react/dist/ssr";
 import { SearchDialog } from "@/components/site/search-dialog";
 import { CartDrawer } from "@/components/site/cart-drawer";
+import { MobileMenu } from "@/components/site/mobile-menu";
 
 const navLinks = [
   { href: "/shop", label: "Shop" },
@@ -19,14 +20,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 bg-[var(--color-bg)] border-b border-[var(--color-border)]">
       <div className="mx-auto max-w-[1400px] px-4 lg:px-10 h-[72px] flex items-center justify-between gap-6">
-        {/* Mobile hamburger */}
-        <button
-          type="button"
-          className="md:hidden p-2 -ml-2 text-[var(--color-text)]"
-          aria-label="Open menu"
-        >
-          <List size={24} />
-        </button>
+        <MobileMenu links={navLinks} />
 
         {/* Logo */}
         <Link href="/" className="flex items-center" aria-label="Onelink home">

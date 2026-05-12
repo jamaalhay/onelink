@@ -158,6 +158,13 @@ test("refund up to captured amount succeeds and marks canceled when fully refund
 });
 
 // ── runner ──────────────────────────────────────────────────────────────────
+const jestTest = (globalThis as unknown as { test?: (name: string, fn: () => Promise<void>) => void }).test;
+if (jestTest) {
+  for (const [name, fn] of TESTS) {
+    jestTest(name, fn);
+  }
+}
+
 export default async function runTests() {
   let passed = 0;
   let failed = 0;

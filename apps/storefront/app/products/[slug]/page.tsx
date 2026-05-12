@@ -1,14 +1,12 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Star, Truck, ShieldCheck, Lock, Package, ShoppingBag } from "@phosphor-icons/react/dist/ssr";
+import Link from "next/link";
+import { Star, Truck, ShieldCheck, Lock, Package } from "@phosphor-icons/react/dist/ssr";
 import { fetchProductByHandle, fetchRelatedProducts, fetchCategoryByHandle } from "@/lib/medusa/server";
 import { fetchReviews } from "@/lib/medusa/reviews";
 import { defaultZone } from "@/lib/mock/zones";
 import { formatJmd, formatRating, formatEtaRange } from "@/lib/format";
 import { AddToCartButtons } from "@/components/site/add-to-cart-buttons";
 import { ProductGallery } from "@/components/site/product-gallery";
-import { VariantPicker } from "@/components/site/variant-picker";
-import { QuantityPicker } from "@/components/site/quantity-picker";
 import { ProductCard } from "@/components/site/product-card";
 import { WhatsAppCta } from "@/components/site/whatsapp-cta";
 import { TrustStrip } from "@/components/site/trust-strip";
@@ -66,15 +64,15 @@ export default async function ProductDetailPage({ params }: PdpProps) {
       />
       {/* Breadcrumb */}
       <nav className="mx-auto max-w-[1400px] px-4 lg:px-10 pt-6 text-xs text-[var(--color-text-muted)]">
-        <a href="/" className="hover:text-[var(--color-accent)]">Home</a>
+        <Link href="/" className="hover:text-[var(--color-accent)]">Home</Link>
         <span className="mx-2 text-[var(--color-text-dim)]">›</span>
-        <a href="/shop" className="hover:text-[var(--color-accent)]">Shop</a>
+        <Link href="/shop" className="hover:text-[var(--color-accent)]">Shop</Link>
         {category && (
           <>
             <span className="mx-2 text-[var(--color-text-dim)]">›</span>
-            <a href={`/shop/${category.slug}`} className="hover:text-[var(--color-accent)]">
+            <Link href={`/shop/${category.slug}`} className="hover:text-[var(--color-accent)]">
               {category.name}
-            </a>
+            </Link>
           </>
         )}
       </nav>
