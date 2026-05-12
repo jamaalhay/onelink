@@ -22,6 +22,7 @@ interface OrderForNotify {
   subtotal?: number | null;
   shipping_total?: number | null;
   currency_code?: string | null;
+  shipping_methods?: { amount?: number | null; total?: number | null }[] | null;
   payment_status?: string | null;
   email?: string | null;
   shipping_address?: { phone?: string | null; address_1?: string | null; city?: string | null } | null;
@@ -34,10 +35,40 @@ function fmtAmt(amount: number | null | undefined, currency: string): string {
   return `${currency.toUpperCase()}$${v.toLocaleString()}`;
 }
 
+function lineItemTotal(item: NonNullable<OrderForNotify["items"]>[number]): number {
+  const explicit = item.total ?? 0;
+  if (explicit > 0) return explicit;
+  return (item.unit_price ?? 0) * (item.quantity ?? 1);
+}
+
+function orderSubtotal(order: OrderForNotify): number {
+  const explicit = order.subtotal ?? 0;
+  if (explicit > 0) return explicit;
+  return (order.items ?? []).reduce((sum, item) => sum + lineItemTotal(item), 0);
+}
+
+function orderShippingTotal(order: OrderForNotify): number {
+  const explicit = order.shipping_total ?? 0;
+  if (explicit > 0) return explicit;
+  return (order.shipping_methods ?? []).reduce(
+    (sum, method) => sum + (method.total ?? method.amount ?? 0),
+    0
+  );
+}
+
+function orderGrandTotal(order: OrderForNotify): number {
+  const explicit = order.total ?? 0;
+  if (explicit > 0) return explicit;
+  return orderSubtotal(order) + orderShippingTotal(order);
+}
+
 function renderEmailHtml(o: OrderForNotify, orderNumber: string, trackUrl: string): string {
   const currency = (o.currency_code ?? "JMD").toUpperCase();
   const cod = o.payment_status === "authorized";
   const items = o.items ?? [];
+  const subtotal = orderSubtotal(o);
+  const shipping = orderShippingTotal(o);
+  const total = orderGrandTotal(o);
   const rows = items
     .map(
       (it) => `
@@ -48,7 +79,7 @@ function renderEmailHtml(o: OrderForNotify, orderNumber: string, trackUrl: strin
           <div style="color:#888;font-size:13px;">Qty ${it.quantity ?? 1}</div>
         </td>
         <td style="padding:12px 0;border-bottom:1px solid #eee;text-align:right;color:#111;">
-          ${fmtAmt(it.total ?? (it.unit_price ?? 0) * (it.quantity ?? 1), currency)}
+          ${fmtAmt(lineItemTotal(it), currency)}
         </td>
       </tr>`
     )
@@ -65,9 +96,9 @@ function renderEmailHtml(o: OrderForNotify, orderNumber: string, trackUrl: strin
 
       <table width="100%" cellspacing="0" cellpadding="0" style="background:#fff;border:1px solid #eee;border-radius:8px;padding:20px 20px 4px;">
         ${rows}
-        <tr><td style="padding:14px 0 4px;color:#666;">Subtotal</td><td style="padding:14px 0 4px;text-align:right;color:#111;">${fmtAmt(o.subtotal, currency)}</td></tr>
-        <tr><td style="padding:4px 0;color:#666;">Delivery</td><td style="padding:4px 0;text-align:right;color:#111;">${fmtAmt(o.shipping_total, currency)}</td></tr>
-        <tr><td style="padding:8px 0 4px;font-weight:600;">Total</td><td style="padding:8px 0 4px;text-align:right;font-weight:600;">${fmtAmt(o.total, currency)}</td></tr>
+        <tr><td style="padding:14px 0 4px;color:#666;">Subtotal</td><td style="padding:14px 0 4px;text-align:right;color:#111;">${fmtAmt(subtotal, currency)}</td></tr>
+        <tr><td style="padding:4px 0;color:#666;">Delivery</td><td style="padding:4px 0;text-align:right;color:#111;">${fmtAmt(shipping, currency)}</td></tr>
+        <tr><td style="padding:8px 0 4px;font-weight:600;">Total</td><td style="padding:8px 0 4px;text-align:right;font-weight:600;">${fmtAmt(total, currency)}</td></tr>
       </table>
 
       ${addr ? `<p style="color:#666;margin:20px 0 0;font-size:14px;">Delivering to <span style="color:#111;">${escapeHtml(addr)}</span></p>` : ""}
@@ -106,7 +137,7 @@ export default async function orderPlacedNotify({
       retrieveOrder(id: string, config: { relations: string[] }): Promise<OrderForNotify>;
     };
     order = await orderModule.retrieveOrder(orderId, {
-      relations: ["shipping_address", "items"],
+      relations: ["shipping_address", "items", "shipping_methods"],
     });
     // retrieveOrder may not return `metadata` depending on Medusa version, so
     // fetch it explicitly via Query for the WA opt-in branch.
@@ -131,6 +162,8 @@ export default async function orderPlacedNotify({
   const trackUrl = `${STOREFRONT_URL.replace(/\/$/, "")}/track/${orderId}`;
   const currency = (order.currency_code ?? "JMD").toUpperCase();
   const itemCount = (order.items ?? []).reduce((n, it) => n + (it.quantity ?? 0), 0);
+  const total = orderGrandTotal(order);
+  const formattedTotal = fmtAmt(total, currency);
   const cod = order.payment_status === "authorized";
 
   const notificationModule = container.resolve(Modules.NOTIFICATION) as unknown as {
@@ -154,8 +187,8 @@ export default async function orderPlacedNotify({
   const phoneChannel = wantsWhatsApp ? "whatsapp" : "sms";
   if (phone) {
     const smsBody = cod
-      ? `Onelink: Order ${orderNumber} confirmed (${itemCount} item${itemCount === 1 ? "" : "s"}, ${fmtAmt(order.total, currency)} on delivery). Track: ${trackUrl}`
-      : `Onelink: Order ${orderNumber} confirmed (${itemCount} item${itemCount === 1 ? "" : "s"}, ${fmtAmt(order.total, currency)}). Track: ${trackUrl}`;
+      ? `Onelink: Order ${orderNumber} confirmed (${itemCount} item${itemCount === 1 ? "" : "s"}, ${formattedTotal} on delivery). Track: ${trackUrl}`
+      : `Onelink: Order ${orderNumber} confirmed (${itemCount} item${itemCount === 1 ? "" : "s"}, ${formattedTotal}). Track: ${trackUrl}`;
     try {
       await notificationModule.createNotifications({
         to: phone,
@@ -167,7 +200,7 @@ export default async function orderPlacedNotify({
           contentVariables: {
             "1": orderNumber,
             "2": String(itemCount),
-            "3": fmtAmt(order.total, currency),
+            "3": formattedTotal,
             "4": trackUrl,
           },
         },
