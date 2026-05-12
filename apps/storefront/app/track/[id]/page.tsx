@@ -116,7 +116,7 @@ export default async function TrackPage({ params }: PageProps) {
               Order details
             </p>
             <dl className="grid grid-cols-2 gap-y-2 text-sm">
-              <dt className="text-[var(--color-text-muted)]">Total paid</dt>
+              <dt className="text-[var(--color-text-muted)]">Order total</dt>
               <dd className="text-[var(--color-text)] font-medium">{formatJmd(order.total ?? 0)}</dd>
               <dt className="text-[var(--color-text-muted)]">Payment</dt>
               <dd className="text-[var(--color-text)] font-medium">
