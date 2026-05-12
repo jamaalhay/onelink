@@ -48,15 +48,16 @@ interface CheckoutFormProps {
 // disabled the inner form runs alone — card payments fall back to the no-op
 // system_default provider in /api/checkout, which doesn't need card details.
 export function CheckoutForm(props: CheckoutFormProps) {
-  // Stripe expects amount in the smallest currency unit (cents). Medusa
-  // stores cart totals in whole units (e.g. 850 JMD for $8.50), so we
-  // multiply by 100. Memoized so the options object identity is stable —
-  // Stripe's Elements remounts on every options change.
+  // Stripe expects amount in the smallest currency unit. Medusa cart totals
+  // are whole display units, so JMD 850 becomes 85000 minor units.
+  // Keep this card-only for now: recent live failures are issuer declines
+  // routed through Link, while plain card has succeeded on this account.
   const options = useMemo<StripeElementsOptions>(
     () => ({
       mode: "payment",
       amount: Math.max((props.cartTotal || 0) * 100, 100),
       currency: (props.cartCurrency || "jmd").toLowerCase(),
+      paymentMethodTypes: ["card"],
       appearance: { theme: "stripe" },
     }),
     [props.cartTotal, props.cartCurrency]
@@ -363,7 +364,7 @@ function CheckoutFormInner({
 
         {paymentMethod === "card" && STRIPE_ENABLED && (
           <div className="mt-2 p-4 rounded-[var(--radius-button)] border border-[var(--color-border)] bg-white">
-            <PaymentElement options={{ layout: "tabs" }} />
+            <PaymentElement options={{ layout: "tabs", wallets: { link: "never" } }} />
           </div>
         )}
       </FormBlock>
