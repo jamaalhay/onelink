@@ -20,6 +20,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const showDemoNav =
+  process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_SHOW_DEMO_NAV === "true";
+
 export const metadata: Metadata = {
   title: {
     default: "Onelink — Premium delivery in Kingston",
@@ -46,7 +49,7 @@ export default function RootLayout({
         <AnalyticsScript />
         <CartWarmup />
         <ChromeGate>
-          <DemoNav />
+          {showDemoNav && <DemoNav />}
           <TopDeliveryBar />
           <Header />
         </ChromeGate>
