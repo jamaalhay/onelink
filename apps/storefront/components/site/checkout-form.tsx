@@ -50,14 +50,11 @@ interface CheckoutFormProps {
 export function CheckoutForm(props: CheckoutFormProps) {
   // Stripe expects amount in the smallest currency unit. Medusa cart totals
   // are whole display units, so JMD 850 becomes 85000 minor units.
-  // Keep this card-only for now: recent live failures are issuer declines
-  // routed through Link, while plain card has succeeded on this account.
   const options = useMemo<StripeElementsOptions>(
     () => ({
       mode: "payment",
       amount: Math.max((props.cartTotal || 0) * 100, 100),
       currency: (props.cartCurrency || "jmd").toLowerCase(),
-      paymentMethodTypes: ["card"],
       appearance: { theme: "stripe" },
     }),
     [props.cartTotal, props.cartCurrency]
@@ -364,12 +361,7 @@ function CheckoutFormInner({
 
         {paymentMethod === "card" && STRIPE_ENABLED && (
           <div className="mt-2 p-4 rounded-[var(--radius-button)] border border-[var(--color-border)] bg-white">
-            <PaymentElement
-              options={{
-                layout: "tabs",
-                wallets: { applePay: "never", googlePay: "never", link: "never" },
-              }}
-            />
+            <PaymentElement options={{ layout: "tabs" }} />
           </div>
         )}
       </FormBlock>

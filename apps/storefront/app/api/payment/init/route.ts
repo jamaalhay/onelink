@@ -75,9 +75,6 @@ export async function POST(req: Request) {
 
     const result = await sdk.store.payment.initiatePaymentSession(cartFresh.cart, {
       provider_id: "pp_stripe_stripe",
-      data: {
-        payment_method_types: ["card"],
-      },
     });
 
     const session = result.payment_collection?.payment_sessions?.find(

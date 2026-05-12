@@ -72,9 +72,10 @@ For each issue, capture: **page URL**, **what you did**, **what you expected**, 
 - [ ] Fill: street address, optional landmark.
 - [ ] Pick a **Delivery zone** from dropdown.
 - [ ] Tick **Send updates via WhatsApp** under Order Updates.
-- [ ] Pick **Card payment** → Stripe Element renders. Enter real card.
+- [ ] Pick **Card payment** → Stripe Element renders. Enter an approved real card, or use Stripe Link if it is offered for the tester's email/browser.
 - [ ] Click **Place order** → after a few seconds, redirects to `https://onelinkjm.com/order/<id>/success`.
 - [ ] Success page shows: order number `OL-XXXXXX`, total, payment label "Card · Paid", track-order button.
+- [ ] In admin, confirm the card order appears with the correct total/payment status, then refund/cancel the QA charge as agreed.
 
 ### B5. Checkout — COD path
 - [ ] Repeat from a fresh cart → at Payment, pick **Cash on Delivery** instead.
@@ -185,8 +186,7 @@ All email links should point to `@onelinkjm.com`. All WhatsApp links point to th
 
 ## F. Edge cases worth one round each
 
-- [ ] **Stripe declined card**: at checkout, use `4000 0000 0000 0002` → see "Card declined" error inline, page doesn't navigate.
-- [ ] **Stripe insufficient funds**: `4000 0000 0000 9995` → similar error.
+- [ ] **Live card failure handling**: do not use Stripe test card numbers on live Stripe. If the approved real card or Link flow fails, capture the exact message, whether a charge appears in Stripe/admin, and whether an order was created.
 - [ ] **Empty checkout submission**: leave name blank, hit Place order → "Please fill in your name, phone, and address."
 - [ ] **Empty cart at checkout**: navigate to [https://onelinkjm.com/checkout](https://onelinkjm.com/checkout) directly with no cart cookie → redirects to [https://onelinkjm.com/cart](https://onelinkjm.com/cart).
 - [ ] **Hard refresh in middle of checkout**: form resets, no zombie state.

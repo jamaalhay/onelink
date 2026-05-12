@@ -242,7 +242,7 @@
             <span class="pill">Last updated: May 12, 2026</span>
             <span class="pill">Storefront: live</span>
             <span class="pill">Admin: live</span>
-            <span class="pill">Primary checkout path: COD</span>
+            <span class="pill">Checkout paths: COD + card</span>
           </div>
         </div>
         <div class="actions">
@@ -272,8 +272,8 @@
           <p>COD checkout works, order success/tracking pages load, SMS fallback delivered with correct totals, and WhatsApp links open to the real Onelink number.</p>
         </div>
         <div class="card status warn">
-          <h2>What to skip unless asked</h2>
-          <p>Card payment is live Stripe and charges real cards. Do not run card tests unless Jamaal explicitly approves a real charge/refund test.</p>
+          <h2>Card test approved</h2>
+          <p>Card payment is live Stripe and charges real cards. Run one low-value approved card or Link test, then verify/refund/cancel in admin.</p>
         </div>
         <div class="card status">
           <h2>Support number</h2>
@@ -326,7 +326,7 @@
       <section id="checkout">
         <div class="section-head">
           <h2>Checkout Validation</h2>
-          <p>COD is the primary live test. Card is real-money and optional only with explicit approval.</p>
+          <p>Run COD first, then one approved low-value card or Link payment test.</p>
         </div>
         <div class="checks">
           <label class="check"><input type="checkbox" /><span><strong>COD order:</strong> add a low-value product, proceed to checkout, fill name, phone, email, street address, optional landmark, and delivery instructions.</span></label>
@@ -334,14 +334,17 @@
           <label class="check"><input type="checkbox" /><span><strong>Payment method:</strong> select Cash on Delivery. Stripe card input should disappear.</span></label>
           <label class="check"><input type="checkbox" /><span><strong>WhatsApp opt-in:</strong> tick Send updates via WhatsApp. Order confirmation currently falls back to SMS while the Twilio order-confirmed template is pending approval.</span></label>
           <label class="check"><input type="checkbox" /><span><strong>Place order:</strong> click Place order once. Success page should load at <code>/order/&lt;id&gt;/success</code> with order number, correct total, Cash on Delivery label, and Track your order button.</span></label>
-          <label class="check"><input type="checkbox" /><span><strong>Cleanup:</strong> cancel the QA order in admin after validating it, or send Jamaal the order number immediately for cancellation.</span></label>
+          <label class="check"><input type="checkbox" /><span><strong>Card or Link order:</strong> from a fresh low-value cart, select Card payment and confirm Stripe renders card entry and the Link option if offered for the tester's email/browser.</span></label>
+          <label class="check"><input type="checkbox" /><span><strong>Approved real payment:</strong> use a real approved card or Stripe Link account. Complete 3DS/authentication if prompted.</span></label>
+          <label class="check"><input type="checkbox" /><span><strong>Card success:</strong> success page should load at <code>/order/&lt;id&gt;/success</code> with order number, correct total, Card/Paid payment label, and Track your order button.</span></label>
+          <label class="check"><input type="checkbox" /><span><strong>Cleanup:</strong> cancel COD QA orders and refund/cancel any card QA charge in admin after validating it, or send Jamaal the order number immediately.</span></label>
         </div>
         <div class="checks two">
           <div class="note bad">
-            <strong>Do not use Stripe test card numbers on live Stripe.</strong> If Jamaal asks you to test card payment, use a real card on a low-value cart, capture the exact error/success state, and confirm refund/cancel handling in admin.
+            <strong>Do not use Stripe test card numbers on live Stripe.</strong> Use only the approved real card or Link path for this QA pass. Charges are real.
           </div>
           <div class="note">
-            <strong>Known card behavior:</strong> card authentication failures may appear as "We are unable to authenticate your payment method." Treat that as known unless the page crashes, charges unexpectedly, or creates an order incorrectly.
+            <strong>Report card failures now:</strong> capture whether the tester used card entry or Link, the exact authentication/decline message, whether a charge appears in Stripe/admin, and whether an order was created.
           </div>
         </div>
       </section>
@@ -352,7 +355,7 @@
           <p>Validate what a customer actually receives after checkout.</p>
         </div>
         <div class="checks">
-          <label class="check"><input type="checkbox" /><span><strong>SMS confirmation:</strong> after a COD order, an SMS should arrive within about 30 seconds. It should include the order number, tracking link, item count, and correct total.</span></label>
+          <label class="check"><input type="checkbox" /><span><strong>SMS confirmation:</strong> after a COD or card order, an SMS should arrive within about 30 seconds. It should include the order number, tracking link, item count, and correct total.</span></label>
           <label class="check"><input type="checkbox" /><span><strong>Email confirmation:</strong> if you used a real email, confirm the order email arrives. Check spam if it does not show within 2 minutes.</span></label>
           <label class="check"><input type="checkbox" /><span><strong>WhatsApp support CTA:</strong> click any Chat on WhatsApp button. It should open WhatsApp or WhatsApp Web to phone <code>18763960575</code> with a prefilled message.</span></label>
           <label class="check"><input type="checkbox" /><span><strong>WhatsApp order confirmation:</strong> do not expect order confirmation via WhatsApp yet. That template is pending Twilio approval and intentionally falls back to SMS.</span></label>
@@ -408,7 +411,7 @@
           <p>Do not file these unless behavior is worse than described.</p>
         </div>
         <div class="checks">
-          <label class="check"><input type="checkbox" /><span><strong>Card payment is deferred.</strong> Live card auth may fail. COD is the primary checkout validation path right now.</span></label>
+          <label class="check"><input type="checkbox" /><span><strong>Card payments are live real charges.</strong> Test only the approved low-value card or Link path, then verify/refund/cancel the order in admin.</span></label>
           <label class="check"><input type="checkbox" /><span><strong>Order confirmation WhatsApp falls back to SMS.</strong> Twilio template <code>order_confirmed_v2</code> is pending approval.</span></label>
           <label class="check"><input type="checkbox" /><span><strong>Tracking map is zone-based.</strong> It does not show real-time rider GPS.</span></label>
           <label class="check"><input type="checkbox" /><span><strong>Rider card is placeholder until dispatch exists.</strong> "Awaiting dispatch" is expected for normal test orders.</span></label>
